@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharperAnorm", "SharperAnor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharperAnormTest", "SharperAnormTest\SharperAnormTest.csproj", "{74A0E523-499E-4D7D-A729-097EDD9F24A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlGenerator", "SqlGenerator\SqlGenerator.csproj", "{C1FA143B-EEE3-4CFD-ACA6-4827DD81ED4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{74A0E523-499E-4D7D-A729-097EDD9F24A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74A0E523-499E-4D7D-A729-097EDD9F24A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74A0E523-499E-4D7D-A729-097EDD9F24A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1FA143B-EEE3-4CFD-ACA6-4827DD81ED4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1FA143B-EEE3-4CFD-ACA6-4827DD81ED4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1FA143B-EEE3-4CFD-ACA6-4827DD81ED4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1FA143B-EEE3-4CFD-ACA6-4827DD81ED4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

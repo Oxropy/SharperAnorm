@@ -12,8 +12,8 @@ namespace SharperAnorm
     /// </summary>
     public class Query
     {
-        private static string VariablePrefix = "@";
-        
+        private const string VariablePrefix = "@";
+
         public string Statement { get; }
         public IDictionary<string, object> Parameters { get; }
 
@@ -69,6 +69,16 @@ namespace SharperAnorm
             }
 
             return new Query(string.Format(statement.Format, placeholders), bindVars);
+        }
+
+        /// <summary>
+        /// Adds <see cref="VariablePrefix"/> to variable name. 
+        /// </summary>
+        /// <param name="variableName">Variable name.</param>
+        /// <returns>Variable name with prefix.</returns>
+        public static string GetVariableBindName(string variableName)
+        {
+            return VariablePrefix + variableName;
         }
     }
 }
