@@ -4,17 +4,17 @@ namespace SqlGenerator
 {
     public class DropClause : IQueryPart
     {
-        public string Name { get; }
+        private readonly string _name;
 
         public DropClause(string name)
         {
-            Name = name;
+            _name = name;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("DROP TABLE ");
-            sb.Append(Name);
+            sb.Append(_name);
         }
     }
 }

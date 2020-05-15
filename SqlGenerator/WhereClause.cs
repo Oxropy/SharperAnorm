@@ -22,87 +22,193 @@ namespace SqlGenerator
 
     public class Junction : ITruthy
     {
-        public ITruthy Lhs { get; }
-        public JunctionOp Op { get; }
-        public ITruthy Rhs { get; }
+        private readonly ITruthy _lhs;
+        private readonly JunctionOp _op;
+        private readonly ITruthy _rhs;
 
         public Junction(ITruthy lhs, JunctionOp op, ITruthy rhs)
         {
-            Lhs = lhs;
-            Op = op;
-            Rhs = rhs;
+            _lhs = lhs;
+            _op = op;
+            _rhs = rhs;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("(");
-            Lhs.BuildQuery(sb);
+            _lhs.BuildQuery(sb);
             sb.Append(") ");
-            sb.Append(Op);
+            sb.Append(_op);
             sb.Append(" (");
-            Rhs.BuildQuery(sb);
+            _rhs.BuildQuery(sb);
             sb.Append(")");
         }
     }
 
-    public class LiteralExpression : ILiteralExpression
+    public class Junctions : ITruthy
     {
-        public object Literal { get; }
+        private readonly JunctionOp _op;
+        private readonly IEnumerable<ITruthy> _truthies;
 
-        public LiteralExpression(object literal)
+        public Junctions(JunctionOp op, params ITruthy[] truthies)
         {
-            Literal = literal;
-        }
-
-        public static string Sanitize(string s)
-        {
-            return s; // TODO: ???
+            _op = op;
+            _truthies = truthies;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
-            if (Literal is string literal)
+            string op = _op switch
             {
-                sb.Append("'");
-                sb.Append(Sanitize(literal));
-                sb.Append("'");
-            }
-            else
-            {
-                sb.Append(Literal);
-            }
-        }
-    }
-
-    public class ListExpression : IExpression
-    {
-        public IEnumerable<IExpression> Expressions { get; }
-
-        public ListExpression(IEnumerable<IExpression> expressions)
-        {
-            Expressions = expressions;
-        }
-
-        public void BuildQuery(StringBuilder sb)
-        {
-            QueryHelper.BuildJoinedExpression(sb, ", ", Expressions);
+                JunctionOp.And => "AND",
+                JunctionOp.Or => "OR",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            sb.Append("(");
+            QueryHelper.BuildJoinedExpression(sb, op, _truthies);
+            sb.Append(")");
         }
     }
 
     public class IsNullExpression : ITruthy
     {
-        public IExpression Expr { get; }
+        private readonly IExpression _expr;
 
         public IsNullExpression(IExpression expr)
         {
-            Expr = expr;
+            _expr = expr;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("(");
-            Expr.BuildQuery(sb);
+            _expr.BuildQuery(sb);
             sb.Append(") IS Null");
+        }
+    }
+
+    public class InExpression : ITruthy
+    {
+        private readonly IExpression _lhr;
+        private readonly IExpression _rhr;
+
+        public InExpression(IExpression lhr, IExpression rhr)
+        {
+            _lhr = lhr;
+            _rhr = rhr;
+        }
+
+        public void BuildQuery(StringBuilder sb)
+        {
+            _lhr.BuildQuery(sb);
+            sb.Append(" IN ");
+            sb.Append("(");
+            _rhr.BuildQuery(sb);
+            sb.Append(")");
+        }
+    }
+
+    public class LikeExpression : ITruthy
+    {
+        private readonly IExpression _lhr;
+        private readonly IExpression _rhs;
+
+        public LikeExpression(IExpression lhr, IExpression rhs)
+        {
+            _lhr = lhr;
+            _rhs = rhs;
+        }
+
+        public void BuildQuery(StringBuilder sb)
+        {
+            sb.Append(_lhr);
+            sb.Append(" LIKE ");
+            if (_rhs is LiteralExpression rhs)
+            {
+                if (rhs.Literal is string)
+                {
+                    _rhs.BuildQuery(sb);
+                }
+                else
+                {
+                    sb.Append("'");
+                    _rhs.BuildQuery(sb);
+                    sb.Append("'");
+                }
+            }
+            else
+            {
+                _rhs.BuildQuery(sb);
+            }
+        }
+    }
+
+    public class ComparisonExpression : ITruthy
+    {
+        private readonly IExpression _lhs;
+        private readonly ComparisonOperator _op;
+        private readonly IExpression _rhs;
+
+        public ComparisonExpression(IExpression lhs, ComparisonOperator op, IExpression rhs)
+        {
+            _lhs = lhs;
+            _op = op;
+            _rhs = rhs;
+        }
+
+        public void BuildQuery(StringBuilder sb)
+        {
+            _lhs.BuildQuery(sb);
+            sb.Append(" ");
+            sb.Append(GetOperatorValue(_op));
+            sb.Append(" ");
+            _rhs.BuildQuery(sb);
+        }
+
+        private static string GetOperatorValue(ComparisonOperator op)
+        {
+            return op switch
+            {
+                ComparisonOperator.Equal => "=",
+                ComparisonOperator.NotEqual => "!=",
+                ComparisonOperator.GreaterThan => ">",
+                ComparisonOperator.GreaterThanOrEqual => ">=",
+                ComparisonOperator.LowerThan => "<",
+                ComparisonOperator.LowerThanOrEqual => "<=",
+                _ => throw new Exception("Unknown operator!")
+            };
+        }
+    }
+
+    public class NotExpression : ITruthy
+    {
+        private readonly ITruthy _expr;
+
+        public NotExpression(ITruthy expr)
+        {
+            _expr = expr;
+        }
+        
+        public void BuildQuery(StringBuilder sb)
+        {
+            sb.Append("NOT (");
+            _expr.BuildQuery(sb);
+            sb.Append(")");
+        }
+    }
+
+    public class ListExpression : IExpression
+    {
+        private readonly IEnumerable<IExpression> _expressions;
+
+        public ListExpression(IEnumerable<IExpression> expressions)
+        {
+            _expressions = expressions;
+        }
+
+        public void BuildQuery(StringBuilder sb)
+        {
+            QueryHelper.BuildJoinedExpression(sb, ", ", _expressions);
         }
     }
 
@@ -114,119 +220,19 @@ namespace SqlGenerator
         }
     }
 
-    public class InExpression : ITruthy
-    {
-        public IExpression Lhr { get; }
-        public IExpression Rhr { get; }
-
-        public InExpression(IExpression lhr, IExpression rhr)
-        {
-            Lhr = lhr;
-            Rhr = rhr;
-        }
-
-        public void BuildQuery(StringBuilder sb)
-        {
-            Lhr.BuildQuery(sb);
-            sb.Append(" IN ");
-            sb.Append("(");
-            Rhr.BuildQuery(sb);
-            sb.Append(")");
-        }
-    }
-
-    public class LikeExpression : ITruthy
-    {
-        public IExpression Lhr { get; }
-        public IExpression Rhs { get; }
-
-        public LikeExpression(IExpression lhr, IExpression rhs)
-        {
-            Lhr = lhr;
-            Rhs = rhs;
-        }
-
-        public void BuildQuery(StringBuilder sb)
-        {
-            sb.Append(Lhr);
-            sb.Append(" LIKE ");
-            if (Rhs is LiteralExpression rhs)
-            {
-                if (rhs.Literal is string)
-                {
-                    Rhs.BuildQuery(sb);
-                }
-                else
-                {
-                    sb.Append("'");
-                    Rhs.BuildQuery(sb);
-                    sb.Append("'");
-                }
-            }
-            else
-            {
-                Rhs.BuildQuery(sb);
-            }
-        }
-    }
-
-    public class ComparisonExpression : ITruthy
-    {
-        public IExpression Lhs { get; }
-        public ComparisonOperator Op { get; }
-        public IExpression Rhs { get; }
-
-        public ComparisonExpression(IExpression lhs, ComparisonOperator op, IExpression rhs)
-        {
-            Lhs = lhs;
-            Op = op;
-            Rhs = rhs;
-        }
-
-        public void BuildQuery(StringBuilder sb)
-        {
-            Lhs.BuildQuery(sb);
-            sb.Append(" ");
-            sb.Append(GetOperatorValue(Op));
-            sb.Append(" ");
-            Rhs.BuildQuery(sb);
-        }
-
-        public static string GetOperatorValue(ComparisonOperator op)
-        {
-            switch (op)
-            {
-                case ComparisonOperator.Equal:
-                    return "=";
-                case ComparisonOperator.NotEqual:
-                    return "!=";
-                case ComparisonOperator.GreaterThan:
-                    return ">";
-                case ComparisonOperator.GreaterThanOrEqual:
-                    return ">=";
-                case ComparisonOperator.LowerThan:
-                    return "<";
-                case ComparisonOperator.LowerThanOrEqual:
-                    return "<=";
-                default:
-                    throw new Exception("Operator unknown!");
-            }
-        }
-    }
-
     public class WhereClause : IQueryPart
     {
-        public ITruthy Expr { get; }
+        private readonly ITruthy _expr;
 
         public WhereClause(ITruthy expr)
         {
-            Expr = expr;
+            _expr = expr;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("WHERE ");
-            Expr.BuildQuery(sb);
+            _expr.BuildQuery(sb);
         }
     }
 }

@@ -5,37 +5,37 @@ namespace SqlGenerator
 {
     public class FieldAliasExpression : ISelection
     {
-        public IExpression Expr { get; }
-        public string Alias { get; }
+        private readonly IExpression _expr;
+        private readonly string _alias;
 
         public FieldAliasExpression(IExpression expr, string alias)
         {
-            Expr = expr;
-            Alias = alias;
+            _expr = expr;
+            _alias = alias;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("(");
-            Expr.BuildQuery(sb);
+            _expr.BuildQuery(sb);
             sb.Append(") AS ");
-            sb.Append(Alias);
+            sb.Append(_alias);
         }
     }
 
     public class SelectClause : IQueryPart
     {
-        public IEnumerable<ISelection> Sel { get; }
+        private readonly IEnumerable<ISelection> _sel;
 
         public SelectClause(IEnumerable<ISelection> sel)
         {
-            Sel = sel;
+            _sel = sel;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("SELECT ");
-            QueryHelper.BuildJoinedExpression(sb, ", ", Sel);
+            QueryHelper.BuildJoinedExpression(sb, ", ", _sel);
         }
     }
 }

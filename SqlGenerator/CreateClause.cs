@@ -12,22 +12,22 @@ namespace SqlGenerator
 
     public class ColumnDefinition : ICreate
     {
-        public string Name { get; }
-        public BaseType Type { get; }
-        public int TypeLength { get; }
+        private readonly string _name;
+        private readonly BaseType _type;
+        private readonly int _typeLength;
 
         public ColumnDefinition(string name, BaseType type, int typeLength = 0)
         {
-            Name = name;
-            Type = type;
-            TypeLength = typeLength;
+            _name = name;
+            _type = type;
+            _typeLength = typeLength;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
-            sb.Append(Name);
+            sb.Append(_name);
             sb.Append(" ");
-            sb.Append(GetTypeValue(Type, TypeLength));
+            sb.Append(GetTypeValue(_type, _typeLength));
         }
 
         public static string GetTypeValue(BaseType type, int length)
@@ -38,28 +38,28 @@ namespace SqlGenerator
 
     public class CreateClause : IQueryPart
     {
-        public string Name { get; }
-        public bool IfNotExist { get; }
-        public IEnumerable<ICreate> Create { get; }
+        private readonly string _name;
+        private readonly bool _ifNotExist;
+        private readonly IEnumerable<ICreate> _create;
 
         public CreateClause(string name, bool ifnotExist, IEnumerable<ICreate> create)
         {
-            this.Name = name;
-            this.IfNotExist = ifnotExist;
-            this.Create = create;
+            _name = name;
+            _ifNotExist = ifnotExist;
+            _create = create;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("CREATE TABLE ");
-            if (IfNotExist)
+            if (_ifNotExist)
             {
                 sb.Append("IF NOT EXISTS ");
             }
 
-            sb.Append(Name);
+            sb.Append(_name);
             sb.Append(" (");
-            QueryHelper.BuildJoinedExpression(sb, ", ", Create);
+            QueryHelper.BuildJoinedExpression(sb, ", ", _create);
             sb.Append(")");
         }
     }

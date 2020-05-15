@@ -22,24 +22,24 @@ namespace SqlGenerator
 
     public class InsertClause : IQueryPart
     {
-        public string Name { get; }
-        public IEnumerable<InsertValue> Values { get; }
+        private readonly string _table;
+        private readonly IEnumerable<InsertValue> _values;
 
-        public InsertClause(string name, IEnumerable<InsertValue> values)
+        public InsertClause(string table, IEnumerable<InsertValue> values)
         {
-            Name = name;
-            Values = values;
+            _table = table;
+            _values = values;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("INSERT INTO ");
-            sb.Append(Name);
+            sb.Append(_table);
             sb.Append(" (");
 
             #region Fieldname build
 
-            using var e = Values.GetEnumerator();
+            using var e = _values.GetEnumerator();
             if (e.MoveNext())
             {
                 var v = e.Current;
@@ -58,7 +58,7 @@ namespace SqlGenerator
             sb.Append(") ");
             sb.Append("  VALUES ");
             sb.Append(" (");
-            QueryHelper.BuildJoinedExpression(sb, ", ", Values);
+            QueryHelper.BuildJoinedExpression(sb, ", ", _values);
             sb.Append(")");
         }
     }

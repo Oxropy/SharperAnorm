@@ -4,21 +4,21 @@ namespace SqlGenerator
 {
     public class DeleteClause : IQueryPart
     {
-        public string Name { get; }
-        public WhereClause Where { get; }
+        private readonly string _name;
+        private readonly WhereClause _where;
 
         public DeleteClause(string name, WhereClause where)
         {
-            Name = name;
-            Where = where;
+            _name = name;
+            _where = where;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("DELETE FROM TABLE ");
-            sb.Append(Name);
+            sb.Append(_name);
             sb.Append(" ");
-            sb.Append(Where.GetQuery());
+            sb.Append(_where.GetQuery());
         }
     }
 }

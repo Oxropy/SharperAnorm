@@ -28,53 +28,82 @@ namespace SqlGenerator
     {
     }
 
-    public interface ICreate : IExpression
+    public interface ICreate : IQueryPart
     {
     }
 
-    public interface IInsert : IExpression
+    public interface IInsert : IQueryPart
     {
     }
 
-    public class FieldReferenceExpression : IExpression, ISelection, IOrderBy
+    public class LiteralExpression : ILiteralExpression
     {
-        public string TableName { get; }
-        public string FieldName { get; }
+        public readonly object Literal;
 
-        public FieldReferenceExpression(string fieldName, string tableName = "")
+        public LiteralExpression(object literal)
         {
-            TableName = tableName;
-            FieldName = fieldName;
+            Literal = literal;
+        }
+
+        public static string Sanitize(string s)
+        {
+            return s; // TODO: ???
         }
 
         public void BuildQuery(StringBuilder sb)
         {
-            if (!string.IsNullOrWhiteSpace(TableName))
+            if (Literal is string literal)
             {
-                sb.Append(TableName);
+                sb.Append("'");
+                sb.Append(Sanitize(literal));
+                sb.Append("'");
+            }
+            else
+            {
+                sb.Append(Literal);
+            }
+        }
+    }
+    
+    public class FieldReferenceExpression : IExpression, ISelection, IOrderBy
+    {
+        private readonly string _tableName;
+        private readonly string _fieldName;
+
+        public FieldReferenceExpression(string fieldName, string tableName = "")
+        {
+            _tableName = tableName;
+            _fieldName = fieldName;
+        }
+
+        public void BuildQuery(StringBuilder sb)
+        {
+            if (!string.IsNullOrWhiteSpace(_tableName))
+            {
+                sb.Append(_tableName);
                 sb.Append(".");
             }
 
-            sb.Append(FieldName);
+            sb.Append(_fieldName);
         }
     }
 
     public class FunctionCallExpression : IExpression, ISelection
     {
-        public string FunctionName { get; }
-        public IEnumerable<IExpression> Parameters { get; }
+        private readonly string _functionName;
+        private readonly IEnumerable<IExpression> _parameters;
 
         public FunctionCallExpression(string functionName, IEnumerable<IExpression> parameters)
         {
-            FunctionName = functionName;
-            Parameters = parameters;
+            _functionName = functionName;
+            _parameters = parameters;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
-            sb.Append(FunctionName);
+            sb.Append(_functionName);
             sb.Append("(");
-            QueryHelper.BuildJoinedExpression(sb, ", ", Parameters);
+            QueryHelper.BuildJoinedExpression(sb, ", ", _parameters);
             sb.Append(")");
         }
     }
@@ -289,6 +318,11 @@ namespace SqlGenerator
             return new IsNullExpression(e);
         }
 
+        public static ITruthy Not(this ITruthy e)
+        {
+            return new NotExpression(e);
+        }
+        
         public static ITruthy In(this IExpression lhs, IExpression rhs)
         {
             return new InExpression(lhs, rhs);

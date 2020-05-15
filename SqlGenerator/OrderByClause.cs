@@ -5,41 +5,41 @@ namespace SqlGenerator
 {
     public enum SortOrder
     {
-        Asc,
-        Desc
+        Ascending,
+        Descending
     }
 
     public class SortOrderClause : IOrderBy
     {
-        public FieldReferenceExpression Field { get; }
-        public SortOrder Sort { get; }
+        private readonly FieldReferenceExpression _field;
+        private readonly SortOrder _sort;
 
-        public SortOrderClause(FieldReferenceExpression field, SortOrder sort = SortOrder.Asc)
+        public SortOrderClause(FieldReferenceExpression field, SortOrder sort = SortOrder.Ascending)
         {
-            Field = field;
-            Sort = sort;
+            _field = field;
+            _sort = sort;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
-            Field.BuildQuery(sb);
-            sb.Append(Sort);
+            _field.BuildQuery(sb);
+            sb.Append(_sort);
         }
     }
 
     public class OrderByClause : IQueryPart
     {
-        public IEnumerable<IOrderBy> OrderBy { get; }
+        private readonly IEnumerable<IOrderBy> _orderBy;
 
         public OrderByClause(IEnumerable<IOrderBy> orderBy)
         {
-            OrderBy = orderBy;
+            _orderBy = orderBy;
         }
 
         public void BuildQuery(StringBuilder sb)
         {
             sb.Append("ORDER BY ");
-            QueryHelper.BuildJoinedExpression(sb, ", ", OrderBy);
+            QueryHelper.BuildJoinedExpression(sb, ", ", _orderBy);
         }
     }
 }
