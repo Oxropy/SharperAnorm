@@ -5,7 +5,7 @@ namespace SqlGenerator
 {
     public interface IQueryPart
     {
-        void BuildQuery(StringBuilder sb);
+        void Build(StringBuilder sb);
     }
 
     public interface ISelection : IQueryPart
@@ -36,6 +36,25 @@ namespace SqlGenerator
     {
     }
 
+    public class ConnectQueryExpression : IQueryPart
+    {
+        private readonly IQueryPart _lhs;
+        private readonly IQueryPart _rhs;
+
+        public ConnectQueryExpression(IQueryPart lhs, IQueryPart rhs)
+        {
+            _lhs = lhs;
+            _rhs = rhs;
+        }
+
+        public void Build(StringBuilder sb)
+        {
+            _lhs.Build(sb);
+            sb.Append(" ");
+            _rhs.Build(sb);
+        }
+    }
+    
     public class LiteralExpression : ILiteralExpression
     {
         public readonly object Literal;
@@ -50,7 +69,7 @@ namespace SqlGenerator
             return s; // TODO: ???
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             if (Literal is string literal)
             {
@@ -76,7 +95,7 @@ namespace SqlGenerator
             _fieldName = fieldName;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             if (!string.IsNullOrWhiteSpace(_tableName))
             {
@@ -99,7 +118,7 @@ namespace SqlGenerator
             _parameters = parameters;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append(_functionName);
             sb.Append("(");
@@ -113,7 +132,7 @@ namespace SqlGenerator
         public static string GetQuery(this IQueryPart part)
         {
             var sb = new StringBuilder();
-            part.BuildQuery(sb);
+            part.Build(sb);
             return sb.ToString();
         }
 
@@ -127,6 +146,25 @@ namespace SqlGenerator
             return new FieldReferenceExpression(field, table);
         }
 
+        #region Build
+        
+        public static IQueryPart AddFrom(this IQueryPart query, FromClause from)
+        {
+            return new ConnectQueryExpression(query, from);
+        }
+        
+        public static IQueryPart AddWhere(this IQueryPart query, WhereClause where)
+        {
+            return new ConnectQueryExpression(query, where);
+        }
+        
+        public static IQueryPart AddOrderBy(this IQueryPart query, OrderByClause orderBy)
+        {
+            return new ConnectQueryExpression(query, orderBy);
+        }
+        
+        #endregion
+        
         #region Create
 
         public static CreateClause Create(string name, bool ifNotExist, params ICreate[] create)
@@ -361,13 +399,13 @@ namespace SqlGenerator
             }
 
             var current = part.Current;
-            current.BuildQuery(sb);
+            current.Build(sb);
 
             while (part.MoveNext())
             {
                 current = part.Current;
                 sb.Append(seperator);
-                current.BuildQuery(sb);
+                current.Build(sb);
             }
         }
     }

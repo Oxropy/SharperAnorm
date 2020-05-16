@@ -14,7 +14,7 @@ namespace SqlGenerator
             Value = value;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append(Value);
         }
@@ -31,7 +31,7 @@ namespace SqlGenerator
             _values = values;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("INSERT INTO ");
             sb.Append(_table);

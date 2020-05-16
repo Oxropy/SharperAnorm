@@ -33,14 +33,14 @@ namespace SqlGenerator
             _rhs = rhs;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("(");
-            _lhs.BuildQuery(sb);
+            _lhs.Build(sb);
             sb.Append(") ");
             sb.Append(_op);
             sb.Append(" (");
-            _rhs.BuildQuery(sb);
+            _rhs.Build(sb);
             sb.Append(")");
         }
     }
@@ -56,7 +56,7 @@ namespace SqlGenerator
             _truthies = truthies;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             string op = _op switch
             {
@@ -79,10 +79,10 @@ namespace SqlGenerator
             _expr = expr;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("(");
-            _expr.BuildQuery(sb);
+            _expr.Build(sb);
             sb.Append(") IS Null");
         }
     }
@@ -98,12 +98,12 @@ namespace SqlGenerator
             _rhr = rhr;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
-            _lhr.BuildQuery(sb);
+            _lhr.Build(sb);
             sb.Append(" IN ");
             sb.Append("(");
-            _rhr.BuildQuery(sb);
+            _rhr.Build(sb);
             sb.Append(")");
         }
     }
@@ -119,7 +119,7 @@ namespace SqlGenerator
             _rhs = rhs;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append(_lhr);
             sb.Append(" LIKE ");
@@ -127,18 +127,18 @@ namespace SqlGenerator
             {
                 if (rhs.Literal is string)
                 {
-                    _rhs.BuildQuery(sb);
+                    _rhs.Build(sb);
                 }
                 else
                 {
                     sb.Append("'");
-                    _rhs.BuildQuery(sb);
+                    _rhs.Build(sb);
                     sb.Append("'");
                 }
             }
             else
             {
-                _rhs.BuildQuery(sb);
+                _rhs.Build(sb);
             }
         }
     }
@@ -156,13 +156,13 @@ namespace SqlGenerator
             _rhs = rhs;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
-            _lhs.BuildQuery(sb);
+            _lhs.Build(sb);
             sb.Append(" ");
             sb.Append(GetOperatorValue(_op));
             sb.Append(" ");
-            _rhs.BuildQuery(sb);
+            _rhs.Build(sb);
         }
 
         private static string GetOperatorValue(ComparisonOperator op)
@@ -189,10 +189,10 @@ namespace SqlGenerator
             _expr = expr;
         }
         
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("NOT (");
-            _expr.BuildQuery(sb);
+            _expr.Build(sb);
             sb.Append(")");
         }
     }
@@ -206,7 +206,7 @@ namespace SqlGenerator
             _expressions = expressions;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             QueryHelper.BuildJoinedExpression(sb, ", ", _expressions);
         }
@@ -214,7 +214,7 @@ namespace SqlGenerator
 
     public class PlaceholderExpression : IExpression
     {
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("?");
         }
@@ -229,10 +229,10 @@ namespace SqlGenerator
             _expr = expr;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("WHERE ");
-            _expr.BuildQuery(sb);
+            _expr.Build(sb);
         }
     }
 }

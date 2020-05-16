@@ -11,7 +11,7 @@ namespace SqlGenerator
             _name = name;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("DROP TABLE ");
             sb.Append(_name);

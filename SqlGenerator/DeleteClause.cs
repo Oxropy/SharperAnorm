@@ -13,7 +13,7 @@ namespace SqlGenerator
             _where = where;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("DELETE FROM TABLE ");
             sb.Append(_name);

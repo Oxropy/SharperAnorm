@@ -23,14 +23,14 @@ namespace SqlGenerator
             _typeLength = typeLength;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append(_name);
             sb.Append(" ");
             sb.Append(GetTypeValue(_type, _typeLength));
         }
 
-        public static string GetTypeValue(BaseType type, int length)
+        private static string GetTypeValue(BaseType type, int length)
         {
             return type.ToString();
         }
@@ -49,7 +49,7 @@ namespace SqlGenerator
             _create = create;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("CREATE TABLE ");
             if (_ifNotExist)

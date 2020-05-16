@@ -20,9 +20,9 @@ namespace SqlGenerator
             _sort = sort;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
-            _field.BuildQuery(sb);
+            _field.Build(sb);
             sb.Append(_sort);
         }
     }
@@ -36,7 +36,7 @@ namespace SqlGenerator
             _orderBy = orderBy;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("ORDER BY ");
             QueryHelper.BuildJoinedExpression(sb, ", ", _orderBy);

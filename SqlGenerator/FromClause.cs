@@ -20,90 +20,84 @@ namespace SqlGenerator
 
     public class TableName : ITableName
     {
-        public string Name { get; }
-        public string Alias { get; }
+        private readonly string _name;
+        private readonly string _alias;
 
         public TableName(string name, string alias = "")
         {
-            Name = name;
-            Alias = alias;
+            _name = name;
+            _alias = alias;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
-            sb.Append(Name);
-            if (!string.IsNullOrWhiteSpace(Alias))
+            sb.Append(_name);
+            if (string.IsNullOrWhiteSpace(_alias))
             {
-                sb.Append(" ");
-                sb.Append(Alias);
+                return;
             }
+
+            sb.Append(" ");
+            sb.Append(_alias);
         }
     }
 
     public class JoinCondition : ITableName
     {
-        public ITableName Lhs { get; }
-        public JoinClause Jn { get; }
-        public ITableName Rhs { get; }
-        public ITruthy Comp { get; }
+        private readonly ITableName _lhs;
+        private readonly JoinClause _jn;
+        private readonly ITableName _rhs;
+        private readonly ITruthy _comp;
 
         public JoinCondition(ITableName lhs, JoinClause jn, ITableName rhs, ITruthy comp)
         {
-            Lhs = lhs;
-            Jn = jn;
-            Rhs = rhs;
-            Comp = comp;
+            _lhs = lhs;
+            _jn = jn;
+            _rhs = rhs;
+            _comp = comp;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
-            Lhs.BuildQuery(sb);
+            _lhs.Build(sb);
             sb.Append(" ");
-            sb.Append(GetJoinValue(Jn));
+            sb.Append(GetJoinValue(_jn));
             sb.Append(" ");
-            Rhs.BuildQuery(sb);
+            _rhs.Build(sb);
             sb.Append(" ON (");
-            Comp.BuildQuery(sb);
+            _comp.Build(sb);
             sb.Append(")");
         }
 
-        public static string GetJoinValue(JoinClause jn)
+        private static string GetJoinValue(JoinClause jn)
         {
-            switch (jn)
+            return jn switch
             {
-                case JoinClause.Inner:
-                    return "INNER JOIN";
-                case JoinClause.Left:
-                    return "LEFT JOIN";
-                case JoinClause.Right:
-                    return "RIGHT JOIN";
-                case JoinClause.Full:
-                    return "FULL JOIN";
-                case JoinClause.LeftOuter:
-                    return "LEFT OUTER JOIN";
-                case JoinClause.RightOuter:
-                    return "RIGHT OUTER JOIN";
-                case JoinClause.FullOuter:
-                    return "FULL OUTER JOIN";
-                default:
-                    throw new Exception("JoinClause unknown!");
-            }
+                JoinClause.Inner => "INNER JOIN",
+                JoinClause.Left => "LEFT JOIN",
+                JoinClause.Right => "RIGHT JOIN",
+                JoinClause.Full => "FULL JOIN",
+                JoinClause.LeftOuter => "LEFT OUTER JOIN",
+                JoinClause.RightOuter => "RIGHT OUTER JOIN",
+                JoinClause.FullOuter => "FULL OUTER JOIN",
+                _ => throw new Exception("JoinClause unknown!")
+            };
         }
     }
 
     public class FromClause : IQueryPart
     {
-        public ITableName Tbl { get; }
+        private readonly ITableName _tbl;
 
         public FromClause(ITableName tbl)
         {
-            Tbl = tbl;
+            _tbl = tbl;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("FROM ");
-            Tbl.BuildQuery(sb);
+            _tbl.Build(sb);
         }
     }
 }

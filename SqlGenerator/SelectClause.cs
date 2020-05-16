@@ -14,10 +14,10 @@ namespace SqlGenerator
             _alias = alias;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("(");
-            _expr.BuildQuery(sb);
+            _expr.Build(sb);
             sb.Append(") AS ");
             sb.Append(_alias);
         }
@@ -32,7 +32,7 @@ namespace SqlGenerator
             _sel = sel;
         }
 
-        public void BuildQuery(StringBuilder sb)
+        public void Build(StringBuilder sb)
         {
             sb.Append("SELECT ");
             QueryHelper.BuildJoinedExpression(sb, ", ", _sel);
