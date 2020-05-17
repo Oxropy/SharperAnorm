@@ -3,12 +3,18 @@ using System.Text;
 
 namespace SqlGenerator
 {
+    #region Interfaces
+
     public interface IQueryPart
     {
         void Build(StringBuilder sb);
     }
 
     public interface ISelection : IQueryPart
+    {
+    }
+
+    public interface ITableName : ISelection
     {
     }
 
@@ -28,6 +34,10 @@ namespace SqlGenerator
     {
     }
 
+    public interface IGroupBy : IQueryPart
+    {
+    }
+
     public interface ICreate : IQueryPart
     {
     }
@@ -35,6 +45,10 @@ namespace SqlGenerator
     public interface IInsert : IQueryPart
     {
     }
+
+    #endregion
+
+    #region Genaral Expressions
 
     public class ConnectQueryExpression : IQueryPart
     {
@@ -54,7 +68,7 @@ namespace SqlGenerator
             _rhs.Build(sb);
         }
     }
-    
+
     public class LiteralExpression : ILiteralExpression
     {
         public readonly object Literal;
@@ -83,8 +97,8 @@ namespace SqlGenerator
             }
         }
     }
-    
-    public class FieldReferenceExpression : IExpression, ISelection, IOrderBy
+
+    public class FieldReferenceExpression : IExpression, ISelection, IOrderBy, IGroupBy
     {
         private readonly string _tableName;
         private readonly string _fieldName;
@@ -127,6 +141,23 @@ namespace SqlGenerator
         }
     }
 
+    public class ListExpression : IExpression
+    {
+        private readonly IEnumerable<IExpression> _expressions;
+
+        public ListExpression(IEnumerable<IExpression> expressions)
+        {
+            _expressions = expressions;
+        }
+
+        public void Build(StringBuilder sb)
+        {
+            QueryHelper.BuildJoinedExpression(sb, ", ", _expressions);
+        }
+    }
+
+    #endregion
+
     public static class QueryBuilderExtensions
     {
         public static string GetQuery(this IQueryPart part)
@@ -147,24 +178,29 @@ namespace SqlGenerator
         }
 
         #region Build
-        
+
         public static IQueryPart AddFrom(this IQueryPart query, FromClause from)
         {
             return new ConnectQueryExpression(query, from);
         }
-        
+
         public static IQueryPart AddWhere(this IQueryPart query, WhereClause where)
         {
             return new ConnectQueryExpression(query, where);
         }
-        
+
         public static IQueryPart AddOrderBy(this IQueryPart query, OrderByClause orderBy)
         {
             return new ConnectQueryExpression(query, orderBy);
         }
-        
+
+        public static IQueryPart AddGroupBy(this IQueryPart query, GroupByClause groupBy)
+        {
+            return new ConnectQueryExpression(query, groupBy);
+        }
+
         #endregion
-        
+
         #region Create
 
         public static CreateClause Create(string name, bool ifNotExist, params ICreate[] create)
@@ -244,37 +280,37 @@ namespace SqlGenerator
 
         public static ITableName InnerJoin(this ITableName lhs, ITableName rhs, ITruthy comp)
         {
-            return new JoinCondition(lhs, JoinClause.Inner, rhs, comp);
+            return Join(lhs, JoinClause.Inner, rhs, comp);
         }
 
         public static ITableName LeftJoin(this ITableName lhs, ITableName rhs, ITruthy comp)
         {
-            return new JoinCondition(lhs, JoinClause.Left, rhs, comp);
+            return Join(lhs, JoinClause.Left, rhs, comp);
         }
 
         public static ITableName RightJoin(this ITableName lhs, ITableName rhs, ITruthy comp)
         {
-            return new JoinCondition(lhs, JoinClause.Right, rhs, comp);
+            return Join(lhs, JoinClause.Right, rhs, comp);
         }
 
         public static ITableName FullJoin(this ITableName lhs, ITableName rhs, ITruthy comp)
         {
-            return new JoinCondition(lhs, JoinClause.Full, rhs, comp);
+            return Join(lhs, JoinClause.Full, rhs, comp);
         }
 
         public static ITableName LeftOuterJoin(this ITableName lhs, ITableName rhs, ITruthy comp)
         {
-            return new JoinCondition(lhs, JoinClause.LeftOuter, rhs, comp);
+            return Join(lhs, JoinClause.LeftOuter, rhs, comp);
         }
 
         public static ITableName RightOuterJoin(this ITableName lhs, ITableName rhs, ITruthy comp)
         {
-            return new JoinCondition(lhs, JoinClause.RightOuter, rhs, comp);
+            return Join(lhs, JoinClause.RightOuter, rhs, comp);
         }
 
         public static ITableName FullOuterJoin(this ITableName lhs, ITableName rhs, ITruthy comp)
         {
-            return new JoinCondition(lhs, JoinClause.FullOuter, rhs, comp);
+            return Join(lhs, JoinClause.FullOuter, rhs, comp);
         }
 
         public static ITableName Join(this ITableName lhs, JoinClause jn, ITableName rhs, ITruthy comp)
@@ -360,7 +396,7 @@ namespace SqlGenerator
         {
             return new NotExpression(e);
         }
-        
+
         public static ITruthy In(this IExpression lhs, IExpression rhs)
         {
             return new InExpression(lhs, rhs);
@@ -383,6 +419,15 @@ namespace SqlGenerator
         public static OrderByClause OrderBy(params IOrderBy[] orderBy)
         {
             return new OrderByClause(orderBy);
+        }
+
+        #endregion
+
+        #region Group By
+
+        public static GroupByClause GroupBy(params IGroupBy[] groupBy)
+        {
+            return new GroupByClause(groupBy);
         }
 
         #endregion

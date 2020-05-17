@@ -3,10 +3,6 @@ using System.Text;
 
 namespace SqlGenerator
 {
-    public interface ITableName : ISelection
-    {
-    }
-
     public enum JoinClause
     {
         Inner,

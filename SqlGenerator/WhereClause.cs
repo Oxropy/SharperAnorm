@@ -20,6 +20,43 @@ namespace SqlGenerator
         LowerThanOrEqual
     }
 
+    public class ComparisonExpression : ITruthy
+    {
+        private readonly IExpression _lhs;
+        private readonly ComparisonOperator _op;
+        private readonly IExpression _rhs;
+
+        public ComparisonExpression(IExpression lhs, ComparisonOperator op, IExpression rhs)
+        {
+            _lhs = lhs;
+            _op = op;
+            _rhs = rhs;
+        }
+
+        public void Build(StringBuilder sb)
+        {
+            _lhs.Build(sb);
+            sb.Append(" ");
+            sb.Append(GetOperatorValue(_op));
+            sb.Append(" ");
+            _rhs.Build(sb);
+        }
+
+        private static string GetOperatorValue(ComparisonOperator op)
+        {
+            return op switch
+            {
+                ComparisonOperator.Equal => "=",
+                ComparisonOperator.NotEqual => "!=",
+                ComparisonOperator.GreaterThan => ">",
+                ComparisonOperator.GreaterThanOrEqual => ">=",
+                ComparisonOperator.LowerThan => "<",
+                ComparisonOperator.LowerThanOrEqual => "<=",
+                _ => throw new NotSupportedException("Unknown operator!")
+            };
+        }
+    }
+
     public class Junction : ITruthy
     {
         private readonly ITruthy _lhs;
@@ -38,10 +75,20 @@ namespace SqlGenerator
             sb.Append("(");
             _lhs.Build(sb);
             sb.Append(") ");
-            sb.Append(_op);
+            sb.Append(GetOperatorValue(_op));
             sb.Append(" (");
             _rhs.Build(sb);
             sb.Append(")");
+        }
+
+        public static string GetOperatorValue(JunctionOp op)
+        {
+            return op switch
+            {
+                JunctionOp.And => "AND",
+                JunctionOp.Or => "OR",
+                _ => throw new NotSupportedException("Unknown operator!")
+            };
         }
     }
 
@@ -58,12 +105,7 @@ namespace SqlGenerator
 
         public void Build(StringBuilder sb)
         {
-            string op = _op switch
-            {
-                JunctionOp.And => "AND",
-                JunctionOp.Or => "OR",
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            string op = Junction.GetOperatorValue(_op);
             sb.Append("(");
             QueryHelper.BuildJoinedExpression(sb, op, _truthies);
             sb.Append(")");
@@ -143,43 +185,6 @@ namespace SqlGenerator
         }
     }
 
-    public class ComparisonExpression : ITruthy
-    {
-        private readonly IExpression _lhs;
-        private readonly ComparisonOperator _op;
-        private readonly IExpression _rhs;
-
-        public ComparisonExpression(IExpression lhs, ComparisonOperator op, IExpression rhs)
-        {
-            _lhs = lhs;
-            _op = op;
-            _rhs = rhs;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            _lhs.Build(sb);
-            sb.Append(" ");
-            sb.Append(GetOperatorValue(_op));
-            sb.Append(" ");
-            _rhs.Build(sb);
-        }
-
-        private static string GetOperatorValue(ComparisonOperator op)
-        {
-            return op switch
-            {
-                ComparisonOperator.Equal => "=",
-                ComparisonOperator.NotEqual => "!=",
-                ComparisonOperator.GreaterThan => ">",
-                ComparisonOperator.GreaterThanOrEqual => ">=",
-                ComparisonOperator.LowerThan => "<",
-                ComparisonOperator.LowerThanOrEqual => "<=",
-                _ => throw new Exception("Unknown operator!")
-            };
-        }
-    }
-
     public class NotExpression : ITruthy
     {
         private readonly ITruthy _expr;
@@ -188,27 +193,12 @@ namespace SqlGenerator
         {
             _expr = expr;
         }
-        
+
         public void Build(StringBuilder sb)
         {
             sb.Append("NOT (");
             _expr.Build(sb);
             sb.Append(")");
-        }
-    }
-
-    public class ListExpression : IExpression
-    {
-        private readonly IEnumerable<IExpression> _expressions;
-
-        public ListExpression(IEnumerable<IExpression> expressions)
-        {
-            _expressions = expressions;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            QueryHelper.BuildJoinedExpression(sb, ", ", _expressions);
         }
     }
 
