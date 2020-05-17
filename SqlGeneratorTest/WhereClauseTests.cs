@@ -24,6 +24,8 @@ namespace SqlGeneratorTest
             }
         }
 
+        #region Comparison operator
+
         [Test]
         public void BuildEqual()
         {
@@ -79,6 +81,10 @@ namespace SqlGeneratorTest
             Assert.That(() => new ComparisonExpression(exp, (ComparisonOperator) 10, exp).GetQuery(), Throws.InstanceOf<NotSupportedException>());
         }
 
+        #endregion
+
+        #region Junction
+
         [Test]
         public void BuildAndExpressions()
         {
@@ -100,6 +106,98 @@ namespace SqlGeneratorTest
         {
             var exp = new TestTruthy();
             Assert.That(() => new Junction(exp, (JunctionOp) 10, exp).GetQuery(), Throws.InstanceOf<NotSupportedException>());
+        }
+
+        #endregion
+
+        #region Junctions
+
+        [Test]
+        public void BuildAndsExpressions()
+        {
+            var exp = new TestTruthy();
+            var result = new Junctions(JunctionOp.And, exp, exp, exp).GetQuery();
+            Assert.That(result, Is.EqualTo("((Test) AND (Test) AND (Test))"));
+        }
+
+        [Test]
+        public void BuildOrsExpressions()
+        {
+            var exp = new TestTruthy();
+            var result = new Junctions(JunctionOp.Or, exp, exp, exp).GetQuery();
+            Assert.That(result, Is.EqualTo("((Test) OR (Test) OR (Test))"));
+        }
+
+        [Test]
+        public void BuildJunctionsUnknownOperator()
+        {
+            var exp = new TestTruthy();
+            Assert.That(() => new Junctions((JunctionOp) 10, exp, exp, exp).GetQuery(), Throws.InstanceOf<NotSupportedException>());
+        }
+
+        #endregion
+
+        [Test]
+        public void BuildIsNull()
+        {
+            var exp = new TestTruthy();
+            var result = new IsNullExpression(exp).GetQuery();
+            Assert.That(result, Is.EqualTo("(Test) IS Null"));
+        }
+
+        [Test]
+        public void BuildIn()
+        {
+            var exp = new TestExpression();
+            var result = new InExpression(exp, exp).GetQuery();
+            Assert.That(result, Is.EqualTo("TEST IN (TEST)"));
+        }
+
+        #region Like
+
+        [Test]
+        public void BuildLike()
+        {
+            var exp = new TestExpression();
+            var result = new LikeExpression(exp, exp).GetQuery();
+            Assert.That(result, Is.EqualTo("TEST LIKE TEST"));
+        }
+
+        [Test]
+        public void BuildLikeWithLierteral()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void BuildLikeWithStringLiteral()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        [Test]
+        public void BuildNot()
+        {
+            var exp = new TestTruthy();
+            var result = new NotExpression(exp).GetQuery();
+            Assert.That(result, Is.EqualTo("NOT (Test)"));
+        }
+
+        [Test]
+        public void BuildPlaceholder()
+        {
+            var result = new PlaceholderExpression().GetQuery();
+            Assert.That(result, Is.EqualTo("?"));
+        }
+
+        [Test]
+        public void BuildWhereClause()
+        {
+            var exp = new TestTruthy();
+            var result = new WhereClause(exp).GetQuery();
+            Assert.That(result, Is.EqualTo("WHERE Test"));
         }
     }
 }

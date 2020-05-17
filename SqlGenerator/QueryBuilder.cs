@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -437,20 +438,23 @@ namespace SqlGenerator
     {
         public static void BuildJoinedExpression(StringBuilder sb, string seperator, IEnumerable<IQueryPart> parts)
         {
+            BuildJoinedExpression(sb, seperator, parts, (part, builder) => part.Build(builder));
+        }
+        
+        public static void BuildJoinedExpression(StringBuilder sb, string seperator, IEnumerable<IQueryPart> parts, Action<IQueryPart, StringBuilder> sourroundPart)
+        {
             using var part = parts.GetEnumerator();
             if (!part.MoveNext())
             {
                 return;
             }
 
-            var current = part.Current;
-            current.Build(sb);
+            sourroundPart(part.Current, sb);
 
             while (part.MoveNext())
             {
-                current = part.Current;
                 sb.Append(seperator);
-                current.Build(sb);
+                sourroundPart(part.Current, sb);
             }
         }
     }

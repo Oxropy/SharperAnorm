@@ -105,9 +105,14 @@ namespace SqlGenerator
 
         public void Build(StringBuilder sb)
         {
-            string op = Junction.GetOperatorValue(_op);
+            string op = $" {Junction.GetOperatorValue(_op)} ";
             sb.Append("(");
-            QueryHelper.BuildJoinedExpression(sb, op, _truthies);
+            QueryHelper.BuildJoinedExpression(sb, op, _truthies, (part, builder) =>
+            {
+                sb.Append("(");
+                part.Build(builder);
+                sb.Append(")");
+            });
             sb.Append(")");
         }
     }
@@ -143,8 +148,7 @@ namespace SqlGenerator
         public void Build(StringBuilder sb)
         {
             _lhr.Build(sb);
-            sb.Append(" IN ");
-            sb.Append("(");
+            sb.Append(" IN (");
             _rhr.Build(sb);
             sb.Append(")");
         }
@@ -163,7 +167,7 @@ namespace SqlGenerator
 
         public void Build(StringBuilder sb)
         {
-            sb.Append(_lhr);
+            _lhr.Build(sb);
             sb.Append(" LIKE ");
             if (_rhs is LiteralExpression rhs)
             {
