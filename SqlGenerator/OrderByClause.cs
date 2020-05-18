@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -23,7 +24,18 @@ namespace SqlGenerator
         public void Build(StringBuilder sb)
         {
             _field.Build(sb);
-            sb.Append(_sort);
+            sb.Append(" ");
+            sb.Append(GetSortOrderValue(_sort));
+        }
+        
+        private static string GetSortOrderValue(SortOrder field)
+        {
+            return field switch
+            {
+                SortOrder.Ascending => "ASC",
+                SortOrder.Descending => "DESC",
+                _ => throw new NotSupportedException("Unknown order!")
+            };
         }
     }
 
@@ -31,7 +43,7 @@ namespace SqlGenerator
     {
         private readonly IEnumerable<IOrderBy> _orderBy;
 
-        public OrderByClause(IEnumerable<IOrderBy> orderBy)
+        public OrderByClause(params IOrderBy[] orderBy)
         {
             _orderBy = orderBy;
         }
