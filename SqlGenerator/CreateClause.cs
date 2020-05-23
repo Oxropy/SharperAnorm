@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,17 +7,35 @@ namespace SqlGenerator
     public enum BaseType
     {
         Text,
-        Numberic,
+        Numeric,
         Integer
     }
 
-    public class ColumnDefinition : ICreate
+    public class BaseTypeColumnDefinition : ColumnDefinition<BaseType>
+    {
+        public BaseTypeColumnDefinition(string name, BaseType type, int typeLength = 0) : base(name, type, typeLength)
+        {
+        }
+
+        protected override string GetTypeValue(BaseType type, int length)
+        {
+            return type switch
+            {
+                BaseType.Text => "Text",
+                BaseType.Numeric => "Numeric",
+                BaseType.Integer => "Integer",
+                _ => throw new ArgumentOutOfRangeException()
+            } + GetTypeLength();
+        }
+    }
+    
+    public abstract class ColumnDefinition<T> : ICreate where T : Enum
     {
         private readonly string _name;
-        private readonly BaseType _type;
+        private readonly T _type;
         private readonly int _typeLength;
 
-        public ColumnDefinition(string name, BaseType type, int typeLength = 0)
+        protected ColumnDefinition(string name, T type, int typeLength = 0)
         {
             _name = name;
             _type = type;
@@ -30,21 +49,23 @@ namespace SqlGenerator
             sb.Append(GetTypeValue(_type, _typeLength));
         }
 
-        private static string GetTypeValue(BaseType type, int length)
+        protected abstract string GetTypeValue(T type, int length);
+        
+        protected virtual string GetTypeLength()
         {
-            return type.ToString();
+            return _typeLength == 0 ? string.Empty : $"({_typeLength})";
         }
     }
 
     public class CreateClause : IQueryPart
     {
-        private readonly string _name;
+        private readonly string _table;
         private readonly bool _ifNotExist;
         private readonly IEnumerable<ICreate> _create;
 
-        public CreateClause(string name, bool ifnotExist, IEnumerable<ICreate> create)
+        public CreateClause(string table, bool ifnotExist, IEnumerable<ICreate> create)
         {
-            _name = name;
+            _table = table;
             _ifNotExist = ifnotExist;
             _create = create;
         }
@@ -57,7 +78,7 @@ namespace SqlGenerator
                 sb.Append("IF NOT EXISTS ");
             }
 
-            sb.Append(_name);
+            sb.Append(_table);
             sb.Append(" (");
             QueryHelper.BuildJoinedExpression(sb, ", ", _create);
             sb.Append(")");

@@ -209,14 +209,9 @@ namespace SqlGenerator
             return new CreateClause(name, ifNotExist, create);
         }
 
-        public static CreateClause Create(string name, bool ifNotExist, IEnumerable<ICreate> create)
+        public static BaseTypeColumnDefinition ColDefinition(this string name, BaseType type, int typeLength = 0)
         {
-            return new CreateClause(name, ifNotExist, create);
-        }
-
-        public static ColumnDefinition ColDefinition(this string name, BaseType type, int typeLenth = 0)
-        {
-            return new ColumnDefinition(name, type, typeLenth);
+            return new BaseTypeColumnDefinition(name, type, typeLength);
         }
 
         #endregion
@@ -440,7 +435,7 @@ namespace SqlGenerator
         {
             BuildJoinedExpression(sb, seperator, parts, (part, builder) => part.Build(builder));
         }
-        
+
         public static void BuildJoinedExpression(StringBuilder sb, string seperator, IEnumerable<IQueryPart> parts, Action<IQueryPart, StringBuilder> sourroundPart)
         {
             using var part = parts.GetEnumerator();
