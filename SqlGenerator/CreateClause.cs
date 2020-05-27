@@ -17,7 +17,7 @@ namespace SqlGenerator
         {
         }
 
-        protected override string GetTypeValue(BaseType type, int length)
+        protected override string GetTypeValue(BaseType type)
         {
             return type switch
             {
@@ -46,10 +46,10 @@ namespace SqlGenerator
         {
             sb.Append(_name);
             sb.Append(" ");
-            sb.Append(GetTypeValue(_type, _typeLength));
+            sb.Append(GetTypeValue(_type));
         }
 
-        protected abstract string GetTypeValue(T type, int length);
+        protected abstract string GetTypeValue(T type);
         
         protected virtual string GetTypeLength()
         {
@@ -63,10 +63,10 @@ namespace SqlGenerator
         private readonly bool _ifNotExist;
         private readonly IEnumerable<ICreate> _create;
 
-        public CreateClause(string table, bool ifnotExist, IEnumerable<ICreate> create)
+        public CreateClause(string table, bool ifNotExist, IEnumerable<ICreate> create)
         {
             _table = table;
-            _ifNotExist = ifnotExist;
+            _ifNotExist = ifNotExist;
             _create = create;
         }
 

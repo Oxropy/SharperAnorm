@@ -227,9 +227,9 @@ namespace SqlGenerator
 
         #region Delete
 
-        public static DeleteClause Delete(string name, WhereClause where)
+        public static DeleteClause Delete(string name)
         {
-            return new DeleteClause(name, where);
+            return new DeleteClause(name);
         }
 
         #endregion
