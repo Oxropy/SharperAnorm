@@ -46,6 +46,10 @@ namespace SqlGenerator
     public interface IInsert : IQueryPart
     {
     }
+    
+    public interface IUpdate : IQueryPart
+    {
+    }
 
     #endregion
 
@@ -241,13 +245,28 @@ namespace SqlGenerator
             return new InsertClause(name, values);
         }
 
-        public static InsertValue Value(this string name, object value)
+        public static InsertValue InsValue(this string name, object value)
         {
             return new InsertValue(name, value);
         }
 
         #endregion
 
+        #region Update
+
+        public static UpdateClause Insert(string name, params UpdateValue[] values)
+        {
+            return new UpdateClause(name, values);
+        }
+
+        public static UpdateValue UpdValue(this string name, object value)
+        {
+            return new UpdateValue(name, value);
+        }
+
+        #endregion
+        
+        
         #region Select
 
         public static SelectClause Select(params ISelection[] s)

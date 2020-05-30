@@ -99,7 +99,7 @@ namespace SqlGeneratorTest
         public void AddOrderByToWhereClause()
         {
             var where = new WhereClause(new TestTruthy());
-            var orderBy = new OrderByClause(new[] {new SortOrderClause("Field".Col(), SortOrder.Ascending)});
+            var orderBy = new OrderByClause(new[] {new SortOrderClause("Field".Col())});
             var result = where.AddOrderBy(orderBy).GetQuery();
             Assert.That(result, Is.EqualTo("WHERE Test ORDER BY Field ASC"));
         }

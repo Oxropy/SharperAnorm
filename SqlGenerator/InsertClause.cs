@@ -5,12 +5,12 @@ namespace SqlGenerator
 {
     public class InsertValue : IInsert
     {
-        public string Name { get; }
+        public string Field { get; }
         public object Value { get; }
 
-        public InsertValue(string name, object value)
+        public InsertValue(string field, object value)
         {
-            Name = name;
+            Field = field;
             Value = value;
         }
 
@@ -43,13 +43,13 @@ namespace SqlGenerator
             if (e.MoveNext())
             {
                 var v = e.Current;
-                sb.Append(v.Name);
+                sb.Append(v.Field);
 
                 while (e.MoveNext())
                 {
                     v = e.Current;
                     sb.Append(", ");
-                    sb.Append(v.Name);
+                    sb.Append(v.Field);
                 }
             }
 
