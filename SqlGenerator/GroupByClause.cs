@@ -7,7 +7,7 @@ namespace SqlGenerator
     {
         private readonly IEnumerable<IGroupBy> _groupBy;
 
-        public GroupByClause(params IGroupBy[] groupBy)
+        public GroupByClause(IEnumerable<IGroupBy> groupBy)
         {
             _groupBy = groupBy;
         }

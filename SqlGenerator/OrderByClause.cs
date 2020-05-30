@@ -43,7 +43,7 @@ namespace SqlGenerator
     {
         private readonly IEnumerable<IOrderBy> _orderBy;
 
-        public OrderByClause(params IOrderBy[] orderBy)
+        public OrderByClause(IEnumerable<IOrderBy> orderBy)
         {
             _orderBy = orderBy;
         }

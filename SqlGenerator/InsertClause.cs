@@ -56,8 +56,8 @@ namespace SqlGenerator
             #endregion
 
             sb.Append(") ");
-            sb.Append("  VALUES ");
-            sb.Append(" (");
+            sb.Append("VALUES ");
+            sb.Append("(");
             QueryHelper.BuildJoinedExpression(sb, ", ", _values);
             sb.Append(")");
         }

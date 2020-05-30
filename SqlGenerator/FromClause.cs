@@ -16,18 +16,18 @@ namespace SqlGenerator
 
     public class TableName : ITableName
     {
-        private readonly string _name;
+        private readonly string _table;
         private readonly string _alias;
 
-        public TableName(string name, string alias = "")
+        public TableName(string table, string alias = "")
         {
-            _name = name;
+            _table = table;
             _alias = alias;
         }
 
         public void Build(StringBuilder sb)
         {
-            sb.Append(_name);
+            sb.Append(_table);
             if (string.IsNullOrWhiteSpace(_alias))
             {
                 return;

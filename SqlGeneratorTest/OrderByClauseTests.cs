@@ -28,7 +28,7 @@ namespace SqlGeneratorTest
             var field = new FieldReferenceExpression("Field", "Table");
             var orderAsc = new SortOrderClause(field, SortOrder.Ascending);
             var orderDesc = new SortOrderClause(field, SortOrder.Descending);
-            var result = new OrderByClause(orderAsc, orderDesc).GetQuery();
+            var result = new OrderByClause(new []{orderAsc, orderDesc}).GetQuery();
             Assert.That(result, Is.EqualTo("ORDER BY Table.Field ASC, Table.Field DESC"));
         }
     }
