@@ -42,19 +42,22 @@ namespace SqlGenerator
     
     public class SelectStatement : IQuery
     {
-        private readonly SelectClause _update;
+        private readonly SelectClause _select;
+        private readonly FromClause _from;
         private readonly WhereClause? _where;
         private readonly GroupByClause? _groupBy;
         private readonly OrderByClause? _orderby;
 
-        public SelectStatement(SelectClause update)
+        public SelectStatement(SelectClause select, FromClause from)
         {
-            _update = update;
+            _select = select;
+            _from = from;
         }
         
-        private SelectStatement(SelectClause update, WhereClause? where, GroupByClause? groupBy, OrderByClause? orderBy)
+        private SelectStatement(SelectClause select, FromClause from, WhereClause? where, GroupByClause? groupBy, OrderByClause? orderBy)
         {
-            _update = update;
+            _select = select;
+            _from = from;
             _where = where;
             _groupBy = groupBy;
             _orderby = orderBy;
@@ -62,22 +65,24 @@ namespace SqlGenerator
 
         public SelectStatement AddWhere(WhereClause where)
         {
-            return new SelectStatement(_update, where, _groupBy, _orderby);
+            return new SelectStatement(_select, _from, where, _groupBy, _orderby);
         }
         
         public SelectStatement AddGroupBy(GroupByClause groupBy)
         {
-            return new SelectStatement(_update, _where, groupBy, _orderby);
+            return new SelectStatement(_select, _from, _where, groupBy, _orderby);
         }
         
         public SelectStatement AddOrderBy(OrderByClause orderBy)
         {
-            return new SelectStatement(_update, _where, _groupBy, orderBy);
+            return new SelectStatement(_select, _from, _where, _groupBy, orderBy);
         }
         
         public void Build(StringBuilder sb)
         {
-            _update.Build(sb);
+            _select.Build(sb);
+            sb.Append(" ");
+            _from.Build(sb);
             QueryHelper.AppendQueryPart(sb, _where);
             QueryHelper.AppendQueryPart(sb, _groupBy);
             QueryHelper.AppendQueryPart(sb, _orderby);
