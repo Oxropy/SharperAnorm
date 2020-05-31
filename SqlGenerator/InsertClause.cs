@@ -62,4 +62,19 @@ namespace SqlGenerator
             sb.Append(")");
         }
     }
+
+    public class InsertStatement : IQuery
+    {
+        private readonly InsertStatement _insert;
+
+        public InsertStatement(InsertStatement insert)
+        {
+            _insert = insert;
+        }
+
+        public void Build(StringBuilder sb)
+        {
+            _insert.Build(sb);
+        }
+    }
 }

@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -5,6 +6,10 @@ using System.Text;
 namespace SqlGenerator
 {
     #region Interfaces
+
+    public interface IQuery : IQueryPart
+    {
+    }
 
     public interface IQueryPart
     {
@@ -46,7 +51,7 @@ namespace SqlGenerator
     public interface IInsert : IQueryPart
     {
     }
-    
+
     public interface IUpdate : IQueryPart
     {
     }
@@ -265,8 +270,8 @@ namespace SqlGenerator
         }
 
         #endregion
-        
-        
+
+
         #region Select
 
         public static SelectClause Select(params ISelection[] s)
@@ -470,6 +475,17 @@ namespace SqlGenerator
                 sb.Append(seperator);
                 sourroundPart(part.Current, sb);
             }
+        }
+        
+        public static void AppendQueryPart(StringBuilder sb, IQueryPart? part)
+        {
+            if (part == null)
+            {
+                return;
+            }
+
+            sb.Append(" ");
+            part.Build(sb);
         }
     }
 }
