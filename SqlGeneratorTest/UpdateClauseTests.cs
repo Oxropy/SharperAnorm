@@ -1,3 +1,4 @@
+using System.Text;
 using NUnit.Framework;
 using SqlGenerator;
 
@@ -9,8 +10,10 @@ namespace SqlGeneratorTest
         [Test]
         public void BuildUpdateValue()
         {
-            var result = new UpdateValue("Name", "Value").GetQuery();
-            Assert.That(result, Is.EqualTo("Name = Value"));
+            var value = new UpdateValue("Name", "Value");
+            var sb = new StringBuilder();
+            value.Build(sb);
+            Assert.That(sb.ToString(), Is.EqualTo("Name = Value"));
         }
         
         [Test]

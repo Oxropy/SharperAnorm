@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -45,14 +44,6 @@ namespace SqlGenerator
     }
 
     public interface ICreate : IQueryPart
-    {
-    }
-
-    public interface IInsert : IQueryPart
-    {
-    }
-
-    public interface IUpdate : IQueryPart
     {
     }
 
@@ -166,6 +157,18 @@ namespace SqlGenerator
         }
     }
 
+    public abstract class FieldValue
+    {
+        public string Field { get; }
+        public object Value { get; }
+        
+        protected FieldValue(string field, object value)
+        {
+            Field = field;
+            Value = value;
+        }
+    }
+    
     #endregion
 
     public static class QueryBuilderExtensions
@@ -451,41 +454,5 @@ namespace SqlGenerator
         }
 
         #endregion
-    }
-
-    public static class QueryHelper
-    {
-        public static void BuildJoinedExpression(StringBuilder sb, string seperator, IEnumerable<IQueryPart> parts)
-        {
-            BuildJoinedExpression(sb, seperator, parts, (part, builder) => part.Build(builder));
-        }
-
-        public static void BuildJoinedExpression(StringBuilder sb, string seperator, IEnumerable<IQueryPart> parts, Action<IQueryPart, StringBuilder> sourroundPart)
-        {
-            using var part = parts.GetEnumerator();
-            if (!part.MoveNext())
-            {
-                return;
-            }
-
-            sourroundPart(part.Current, sb);
-
-            while (part.MoveNext())
-            {
-                sb.Append(seperator);
-                sourroundPart(part.Current, sb);
-            }
-        }
-        
-        public static void AppendQueryPart(StringBuilder sb, IQueryPart? part)
-        {
-            if (part == null)
-            {
-                return;
-            }
-
-            sb.Append(" ");
-            part.Build(sb);
-        }
     }
 }

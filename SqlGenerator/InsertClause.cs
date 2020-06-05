@@ -1,25 +1,16 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SqlGenerator
 {
-    public class InsertValue : IInsert
+    public class InsertValue : FieldValue
     {
-        public string Field { get; }
-        public object Value { get; }
-
-        public InsertValue(string field, object value)
+        public InsertValue(string field, object value) : base(field, value)
         {
-            Field = field;
-            Value = value;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append(Value);
         }
     }
-
+    
     public class InsertClause : IQueryPart
     {
         private readonly string _table;
@@ -33,32 +24,15 @@ namespace SqlGenerator
 
         public void Build(StringBuilder sb)
         {
+            const string seperator = ", ";
             sb.Append("INSERT INTO ");
             sb.Append(_table);
             sb.Append(" (");
-
-            #region Fieldname build
-
-            using var e = _values.GetEnumerator();
-            if (e.MoveNext())
-            {
-                var v = e.Current;
-                sb.Append(v.Field);
-
-                while (e.MoveNext())
-                {
-                    v = e.Current;
-                    sb.Append(", ");
-                    sb.Append(v.Field);
-                }
-            }
-
-            #endregion
-
+            QueryHelper.BuildSeperated(sb, seperator, _values.Select(v => v.Field), (part, builder) => builder.Append(part));
             sb.Append(") ");
             sb.Append("VALUES ");
             sb.Append("(");
-            QueryHelper.BuildJoinedExpression(sb, ", ", _values);
+            QueryHelper.BuildSeperated(sb, seperator, _values.Select(v => v.Value), (part, builder) => builder.Append(part));
             sb.Append(")");
         }
     }

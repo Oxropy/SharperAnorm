@@ -9,8 +9,9 @@ namespace SqlGeneratorTest
         [Test]
         public void BuildInsertValue()
         {
-            var result = new InsertValue("Name", "Value").GetQuery();
-            Assert.That(result, Is.EqualTo("Value"));
+            var value = new InsertValue("Name", "Value");
+            Assert.That(value.Field, Is.EqualTo("Name"));
+            Assert.That(value.Value, Is.EqualTo("Value"));
         }
         
         [Test]
