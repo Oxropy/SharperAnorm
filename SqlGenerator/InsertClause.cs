@@ -39,9 +39,9 @@ namespace SqlGenerator
 
     public class InsertStatement : IQuery
     {
-        private readonly InsertStatement _insert;
+        private readonly InsertClause _insert;
 
-        public InsertStatement(InsertStatement insert)
+        private InsertStatement(InsertClause insert)
         {
             _insert = insert;
         }
@@ -49,6 +49,12 @@ namespace SqlGenerator
         public void Build(StringBuilder sb)
         {
             _insert.Build(sb);
+        }
+
+        public static InsertStatement Insert(string table, IEnumerable<InsertValue> values)
+        {
+            var clause = new InsertClause(table, values);
+            return new InsertStatement(clause);
         }
     }
 }
