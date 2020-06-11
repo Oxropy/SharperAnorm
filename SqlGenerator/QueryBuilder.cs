@@ -157,18 +157,6 @@ namespace SqlGenerator
         }
     }
 
-    public abstract class FieldValue
-    {
-        public string Field { get; }
-        public object Value { get; }
-        
-        protected FieldValue(string field, object value)
-        {
-            Field = field;
-            Value = value;
-        }
-    }
-    
     #endregion
 
     public static class QueryBuilderExtensions
@@ -248,28 +236,18 @@ namespace SqlGenerator
 
         #region Insert
 
-        public static InsertClause Insert(string name, params InsertValue[] values)
+        public static InsertClause Insert(string name, params (string, object)[] values)
         {
             return new InsertClause(name, values);
-        }
-
-        public static InsertValue InsValue(this string name, object value)
-        {
-            return new InsertValue(name, value);
         }
 
         #endregion
 
         #region Update
 
-        public static UpdateClause Insert(string name, params UpdateValue[] values)
+        public static UpdateClause Update(string name, params (string, object)[] values)
         {
             return new UpdateClause(name, values);
-        }
-
-        public static UpdateValue UpdValue(this string name, object value)
-        {
-            return new UpdateValue(name, value);
         }
 
         #endregion

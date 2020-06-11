@@ -63,17 +63,17 @@ namespace SqlGenerator
             _orderby = orderBy;
         }
 
-        public SelectStatement AddWhere(WhereClause where)
+        public SelectStatement WithWhere(WhereClause where)
         {
             return new SelectStatement(_select, _from, where, _groupBy, _orderby);
         }
         
-        public SelectStatement AddGroupBy(GroupByClause groupBy)
+        public SelectStatement WithGroupBy(GroupByClause groupBy)
         {
             return new SelectStatement(_select, _from, _where, groupBy, _orderby);
         }
         
-        public SelectStatement AddOrderBy(OrderByClause orderBy)
+        public SelectStatement WithOrderBy(OrderByClause orderBy)
         {
             return new SelectStatement(_select, _from, _where, _groupBy, orderBy);
         }

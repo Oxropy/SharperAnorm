@@ -4,26 +4,12 @@ using System.Text;
 
 namespace SqlGenerator
 {
-    public class UpdateValue : FieldValue
-    {
-        public UpdateValue(string field, object value) : base(field, value)
-        {
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append(Field);
-            sb.Append(" = ");
-            sb.Append(Value);
-        }
-    }
-    
     public class UpdateClause : IQueryPart
     {
         private readonly string _table;
-        private readonly IEnumerable<UpdateValue> _values;
+        private readonly IEnumerable<(string filed, object value)> _values;
 
-        public UpdateClause(string table, IEnumerable<UpdateValue> values)
+        public UpdateClause(string table, IEnumerable<(string, object)> values)
         {
             _table = table;
             _values = values;
@@ -34,11 +20,17 @@ namespace SqlGenerator
             sb.Append("UPDATE ");
             sb.Append(_table);
             sb.Append(" SET (");
-            QueryHelper.BuildSeperated(sb, ", ", _values, (part, builder) => part.Build(builder));
+            QueryHelper.BuildSeperated(sb, ", ", _values, (part, builder) =>
+            {
+                (string field, object value) = part;
+                sb.Append(field);
+                sb.Append(" = ");
+                sb.Append(value);
+            });
             sb.Append(")");
         }
     }
-    
+
     public class UpdateStatement : IQuery
     {
         private readonly UpdateClause _update;
@@ -48,7 +40,7 @@ namespace SqlGenerator
         {
             _update = update;
         }
-        
+
         private UpdateStatement(UpdateClause update, WhereClause where)
         {
             _update = update;
@@ -59,7 +51,7 @@ namespace SqlGenerator
         {
             return new UpdateStatement(_update, where);
         }
-        
+
         public void Build(StringBuilder sb)
         {
             _update.Build(sb);
