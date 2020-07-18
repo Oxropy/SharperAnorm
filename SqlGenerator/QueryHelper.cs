@@ -7,16 +7,16 @@ namespace SqlGenerator
 {
     public static class QueryHelper
     {
-        public static void BuildJoinedExpression(StringBuilder sb, string seperator, IEnumerable<IQueryPart> parts)
+        public static void BuildJoinedExpression(StringBuilder sb, string seperator, IEnumerable<IQueryPart> parts, IGenerator generator)
         {
-            BuildJoinedExpression(sb, seperator, parts, (part, builder) => part.Build(builder));
+            BuildJoinedExpression(sb, seperator, parts, generator.Build);
         }
 
         public static void BuildJoinedExpression(StringBuilder sb, string seperator, IEnumerable<IQueryPart> parts, Action<IQueryPart, StringBuilder> sourroundPart)
         {
             BuildSeperated(sb, seperator, parts, sourroundPart);
         }
-        
+
         public static void BuildSeperated<T>(StringBuilder sb, string seperator, IEnumerable<T> parts, Action<T, StringBuilder> appendPart)
         {
             using var part = parts.GetEnumerator();
@@ -33,8 +33,8 @@ namespace SqlGenerator
                 appendPart(part.Current, sb);
             }
         }
-        
-        public static void AppendQueryPart(StringBuilder sb, IQueryPart? part)
+
+        public static void AppendQueryPart(IGenerator generator, StringBuilder sb, IQueryPart? part)
         {
             if (part == null)
             {
@@ -42,7 +42,7 @@ namespace SqlGenerator
             }
 
             sb.Append(" ");
-            part.Build(sb);
+            generator.Build(part, sb);
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using NUnit.Framework;
 using SqlGenerator;
 
@@ -8,77 +7,67 @@ namespace SqlGeneratorTest
     [TestFixture]
     public class WhereClauseTests
     {
-        private class TestExpression : IExpression
-        {
-            public void Build(StringBuilder sb)
-            {
-                sb.Append("TEST");
-            }
-        }
+        private readonly IGenerator _generator = new PostgreSqlGenerator();
 
-        private class TestTruthy : ITruthy
-        {
-            public void Build(StringBuilder sb)
-            {
-                sb.Append("Test");
-            }
-        }
+        private static IExpression TestExpression => new LiteralExpression("TEST");
+
+        private static ITruthy TestTruthy => new ComparisonExpression(new LiteralExpression("1"), ComparisonOperator.Equal, new LiteralExpression("1"));
 
         #region Comparison operator
 
         [Test]
         public void BuildEqual()
         {
-            var exp = new TestExpression();
-            var result = new ComparisonExpression(exp, ComparisonOperator.Equal, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("TEST = TEST"));
+            var exp = TestExpression;
+            var result = new ComparisonExpression(exp, ComparisonOperator.Equal, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("'TEST' = 'TEST'"));
         }
 
         [Test]
         public void BuildNotEqual()
         {
-            var exp = new TestExpression();
-            var result = new ComparisonExpression(exp, ComparisonOperator.NotEqual, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("TEST != TEST"));
+            var exp = TestExpression;
+            var result = new ComparisonExpression(exp, ComparisonOperator.NotEqual, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("'TEST' != 'TEST'"));
         }
 
         [Test]
         public void BuildGreaterThan()
         {
-            var exp = new TestExpression();
-            var result = new ComparisonExpression(exp, ComparisonOperator.GreaterThan, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("TEST > TEST"));
+            var exp = TestExpression;
+            var result = new ComparisonExpression(exp, ComparisonOperator.GreaterThan, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("'TEST' > 'TEST'"));
         }
 
         [Test]
         public void BuildGreaterThanOrEqual()
         {
-            var exp = new TestExpression();
-            var result = new ComparisonExpression(exp, ComparisonOperator.GreaterThanOrEqual, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("TEST >= TEST"));
+            var exp = TestExpression;
+            var result = new ComparisonExpression(exp, ComparisonOperator.GreaterThanOrEqual, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("'TEST' >= 'TEST'"));
         }
 
         [Test]
         public void BuildLowerThan()
         {
-            var exp = new TestExpression();
-            var result = new ComparisonExpression(exp, ComparisonOperator.LowerThan, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("TEST < TEST"));
+            var exp = TestExpression;
+            var result = new ComparisonExpression(exp, ComparisonOperator.LowerThan, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("'TEST' < 'TEST'"));
         }
 
         [Test]
         public void BuildLowerThanOrEqual()
         {
-            var exp = new TestExpression();
-            var result = new ComparisonExpression(exp, ComparisonOperator.LowerThanOrEqual, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("TEST <= TEST"));
+            var exp = TestExpression;
+            var result = new ComparisonExpression(exp, ComparisonOperator.LowerThanOrEqual, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("'TEST' <= 'TEST'"));
         }
 
         [Test]
         public void BuildCompareUnknownOperator()
         {
-            var exp = new TestExpression();
-            Assert.That(() => new ComparisonExpression(exp, (ComparisonOperator) 10, exp).GetQuery(), Throws.InstanceOf<NotSupportedException>());
+            var exp = TestExpression;
+            Assert.That(() => new ComparisonExpression(exp, (ComparisonOperator) 10, exp).GetQuery(_generator), Throws.InstanceOf<NotSupportedException>());
         }
 
         #endregion
@@ -88,24 +77,24 @@ namespace SqlGeneratorTest
         [Test]
         public void BuildAndExpressions()
         {
-            var exp = new TestTruthy();
-            var result = new Junction(exp, JunctionOp.And, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("(Test) AND (Test)"));
+            var exp = TestTruthy;
+            var result = new Junction(exp, JunctionOp.And, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("('1' = '1') AND ('1' = '1')"));
         }
 
         [Test]
         public void BuildOrExpressions()
         {
-            var exp = new TestTruthy();
-            var result = new Junction(exp, JunctionOp.Or, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("(Test) OR (Test)"));
+            var exp = TestTruthy;
+            var result = new Junction(exp, JunctionOp.Or, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("('1' = '1') OR ('1' = '1')"));
         }
 
         [Test]
         public void BuildJunctionUnknownOperator()
         {
-            var exp = new TestTruthy();
-            Assert.That(() => new Junction(exp, (JunctionOp) 10, exp).GetQuery(), Throws.InstanceOf<NotSupportedException>());
+            var exp = TestTruthy;
+            Assert.That(() => new Junction(exp, (JunctionOp) 10, exp).GetQuery(_generator), Throws.InstanceOf<NotSupportedException>());
         }
 
         #endregion
@@ -115,24 +104,24 @@ namespace SqlGeneratorTest
         [Test]
         public void BuildAndsExpressions()
         {
-            var exp = new TestTruthy();
-            var result = new Junctions(JunctionOp.And, exp, exp, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("((Test) AND (Test) AND (Test))"));
+            var exp = TestTruthy;
+            var result = new Junctions(JunctionOp.And, exp, exp, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("(('1' = '1') AND ('1' = '1') AND ('1' = '1'))"));
         }
 
         [Test]
         public void BuildOrsExpressions()
         {
-            var exp = new TestTruthy();
-            var result = new Junctions(JunctionOp.Or, exp, exp, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("((Test) OR (Test) OR (Test))"));
+            var exp = TestTruthy;
+            var result = new Junctions(JunctionOp.Or, exp, exp, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("(('1' = '1') OR ('1' = '1') OR ('1' = '1'))"));
         }
 
         [Test]
         public void BuildJunctionsUnknownOperator()
         {
-            var exp = new TestTruthy();
-            Assert.That(() => new Junctions((JunctionOp) 10, exp, exp, exp).GetQuery(), Throws.InstanceOf<NotSupportedException>());
+            var exp = TestTruthy;
+            Assert.That(() => new Junctions((JunctionOp) 10, exp, exp, exp).GetQuery(_generator), Throws.InstanceOf<NotSupportedException>());
         }
 
         #endregion
@@ -140,17 +129,17 @@ namespace SqlGeneratorTest
         [Test]
         public void BuildIsNull()
         {
-            var exp = new TestTruthy();
-            var result = new IsNullExpression(exp).GetQuery();
-            Assert.That(result, Is.EqualTo("(Test) IS Null"));
+            var exp = TestTruthy;
+            var result = new IsNullExpression(exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("('1' = '1') IS Null"));
         }
 
         [Test]
         public void BuildIn()
         {
-            var exp = new TestExpression();
-            var result = new InExpression(exp, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("TEST IN (TEST)"));
+            var exp = TestExpression;
+            var result = new InExpression(exp, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("'TEST' IN ('TEST')"));
         }
 
         #region Like
@@ -158,9 +147,9 @@ namespace SqlGeneratorTest
         [Test]
         public void BuildLike()
         {
-            var exp = new TestExpression();
-            var result = new LikeExpression(exp, exp).GetQuery();
-            Assert.That(result, Is.EqualTo("TEST LIKE TEST"));
+            var exp = TestExpression;
+            var result = new LikeExpression(exp, exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("'TEST' LIKE 'TEST'"));
         }
 
         [Test]
@@ -180,24 +169,24 @@ namespace SqlGeneratorTest
         [Test]
         public void BuildNot()
         {
-            var exp = new TestTruthy();
-            var result = new NotExpression(exp).GetQuery();
-            Assert.That(result, Is.EqualTo("NOT (Test)"));
+            var exp = TestTruthy;
+            var result = new NotExpression(exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("NOT ('1' = '1')"));
         }
 
         [Test]
         public void BuildPlaceholder()
         {
-            var result = new PlaceholderExpression().GetQuery();
+            var result = new PlaceholderExpression().GetQuery(_generator);
             Assert.That(result, Is.EqualTo("?"));
         }
 
         [Test]
         public void BuildWhereClause()
         {
-            var exp = new TestTruthy();
-            var result = new WhereClause(exp).GetQuery();
-            Assert.That(result, Is.EqualTo("WHERE Test"));
+            var exp = TestTruthy;
+            var result = new WhereClause(exp).GetQuery(_generator);
+            Assert.That(result, Is.EqualTo("WHERE '1' = '1'"));
         }
     }
 }

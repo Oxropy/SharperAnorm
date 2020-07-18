@@ -1,49 +1,35 @@
 #nullable enable
-using System.Text;
-
 namespace SqlGenerator
 {
     public class DeleteClause : IQueryPart
     {
-        private readonly string _table;
+        public string Table { get; }
 
         public DeleteClause(string table)
         {
-            _table = table;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("DELETE FROM ");
-            sb.Append(_table);
+            Table = table;
         }
     }
-    
+
     public class DeleteStatement : IQuery
     {
-        private readonly DeleteClause _delete;
-        private readonly WhereClause? _where;
+        public DeleteClause Delete { get; }
+        public WhereClause? Where { get; }
 
         public DeleteStatement(DeleteClause delete)
         {
-            _delete = delete;
+            Delete = delete;
         }
-        
+
         private DeleteStatement(DeleteClause delete, WhereClause where)
         {
-            _delete = delete;
-            _where = where;
+            Delete = delete;
+            Where = where;
         }
 
         public DeleteStatement AddWhere(WhereClause where)
         {
-            return new DeleteStatement(_delete, where);
-        }
-        
-        public void Build(StringBuilder sb)
-        {
-            _delete.Build(sb);
-            QueryHelper.AppendQueryPart(sb, _where);
+            return new DeleteStatement(Delete, where);
         }
     }
 }

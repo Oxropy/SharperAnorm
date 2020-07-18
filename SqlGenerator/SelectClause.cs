@@ -1,91 +1,66 @@
 #nullable enable
 using System.Collections.Generic;
-using System.Text;
 
 namespace SqlGenerator
 {
     public class FieldAliasExpression : ISelection
     {
-        private readonly IExpression _expr;
-        private readonly string _alias;
+        public IExpression Expr { get; }
+        public string Alias { get; }
 
         public FieldAliasExpression(IExpression expr, string alias)
         {
-            _expr = expr;
-            _alias = alias;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("(");
-            _expr.Build(sb);
-            sb.Append(") AS ");
-            sb.Append(_alias);
+            Expr = expr;
+            Alias = alias;
         }
     }
 
     public class SelectClause : IQueryPart
     {
-        private readonly IEnumerable<ISelection> _sel;
+        public IEnumerable<ISelection> Sel { get; }
 
         public SelectClause(IEnumerable<ISelection> sel)
         {
-            _sel = sel;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("SELECT ");
-            QueryHelper.BuildJoinedExpression(sb, ", ", _sel);
+            Sel = sel;
         }
     }
-    
+
     public class SelectStatement : IQuery
     {
-        private readonly SelectClause _select;
-        private readonly FromClause _from;
-        private readonly WhereClause? _where;
-        private readonly GroupByClause? _groupBy;
-        private readonly OrderByClause? _orderby;
+        public SelectClause Select { get; }
+        public FromClause From { get; }
+        public WhereClause? Where { get; }
+        public GroupByClause? GroupBy { get; }
+        public OrderByClause? Orderby { get; }
 
         public SelectStatement(SelectClause select, FromClause from)
         {
-            _select = select;
-            _from = from;
+            Select = select;
+            From = from;
         }
-        
+
         private SelectStatement(SelectClause select, FromClause from, WhereClause? where, GroupByClause? groupBy, OrderByClause? orderBy)
         {
-            _select = select;
-            _from = from;
-            _where = where;
-            _groupBy = groupBy;
-            _orderby = orderBy;
+            Select = select;
+            From = from;
+            Where = where;
+            GroupBy = groupBy;
+            Orderby = orderBy;
         }
 
         public SelectStatement WithWhere(WhereClause where)
         {
-            return new SelectStatement(_select, _from, where, _groupBy, _orderby);
+            return new SelectStatement(Select, From, where, GroupBy, Orderby);
         }
-        
+
         public SelectStatement WithGroupBy(GroupByClause groupBy)
         {
-            return new SelectStatement(_select, _from, _where, groupBy, _orderby);
+            return new SelectStatement(Select, From, Where, groupBy, Orderby);
         }
-        
+
         public SelectStatement WithOrderBy(OrderByClause orderBy)
         {
-            return new SelectStatement(_select, _from, _where, _groupBy, orderBy);
-        }
-        
-        public void Build(StringBuilder sb)
-        {
-            _select.Build(sb);
-            sb.Append(" ");
-            _from.Build(sb);
-            QueryHelper.AppendQueryPart(sb, _where);
-            QueryHelper.AppendQueryPart(sb, _groupBy);
-            QueryHelper.AppendQueryPart(sb, _orderby);
+            return new SelectStatement(Select, From, Where, GroupBy, orderBy);
         }
     }
 }

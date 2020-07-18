@@ -1,20 +1,12 @@
-using System.Text;
-
 namespace SqlGenerator
 {
     public class DropClause : IQueryPart
     {
-        private readonly string _table;
+        public string Table { get; }
 
         public DropClause(string table)
         {
-            _table = table;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("DROP TABLE ");
-            sb.Append(_table);
+            Table = table;
         }
     }
 }

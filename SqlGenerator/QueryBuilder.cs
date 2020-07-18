@@ -12,7 +12,6 @@ namespace SqlGenerator
 
     public interface IQueryPart
     {
-        void Build(StringBuilder sb);
     }
 
     public interface ISelection : IQueryPart
@@ -53,20 +52,13 @@ namespace SqlGenerator
 
     public class ConnectQueryExpression : IQueryPart
     {
-        private readonly IQueryPart _lhs;
-        private readonly IQueryPart _rhs;
+        public IQueryPart Lhs { get; }
+        public IQueryPart Rhs { get; }
 
         public ConnectQueryExpression(IQueryPart lhs, IQueryPart rhs)
         {
-            _lhs = lhs;
-            _rhs = rhs;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            _lhs.Build(sb);
-            sb.Append(" ");
-            _rhs.Build(sb);
+            Lhs = lhs;
+            Rhs = rhs;
         }
     }
 
@@ -83,77 +75,39 @@ namespace SqlGenerator
         {
             return s; // TODO: ???
         }
-
-        public void Build(StringBuilder sb)
-        {
-            if (Literal is string literal)
-            {
-                sb.Append("'");
-                sb.Append(Sanitize(literal));
-                sb.Append("'");
-            }
-            else
-            {
-                sb.Append(Literal);
-            }
-        }
     }
 
     public class FieldReferenceExpression : IExpression, ISelection, IOrderBy, IGroupBy
     {
-        private readonly string _tableName;
-        private readonly string _fieldName;
+        public string Name { get; }
+        public string FieldName { get; }
 
         public FieldReferenceExpression(string fieldName, string tableName = "")
         {
-            _tableName = tableName;
-            _fieldName = fieldName;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            if (!string.IsNullOrWhiteSpace(_tableName))
-            {
-                sb.Append(_tableName);
-                sb.Append(".");
-            }
-
-            sb.Append(_fieldName);
+            Name = tableName;
+            FieldName = fieldName;
         }
     }
 
     public class FunctionCallExpression : IExpression, ISelection
     {
-        private readonly string _functionName;
-        private readonly IEnumerable<IExpression> _parameters;
+        public string FunctionName { get; }
+        public IEnumerable<IExpression> Parameters { get; }
 
         public FunctionCallExpression(string functionName, IEnumerable<IExpression> parameters)
         {
-            _functionName = functionName;
-            _parameters = parameters;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append(_functionName);
-            sb.Append("(");
-            QueryHelper.BuildJoinedExpression(sb, ", ", _parameters);
-            sb.Append(")");
+            FunctionName = functionName;
+            Parameters = parameters;
         }
     }
 
     public class ListExpression : IExpression
     {
-        private readonly IEnumerable<IExpression> _expressions;
+        public IEnumerable<IExpression> Expressions { get; }
 
         public ListExpression(IEnumerable<IExpression> expressions)
         {
-            _expressions = expressions;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            QueryHelper.BuildJoinedExpression(sb, ", ", _expressions);
+            Expressions = expressions;
         }
     }
 
@@ -161,10 +115,10 @@ namespace SqlGenerator
 
     public static class QueryBuilderExtensions
     {
-        public static string GetQuery(this IQueryPart part)
+        public static string GetQuery(this IQueryPart part, IGenerator generator)
         {
             var sb = new StringBuilder();
-            part.Build(sb);
+            generator.Build(part, sb);
             return sb.ToString();
         }
 

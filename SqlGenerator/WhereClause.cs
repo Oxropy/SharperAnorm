@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SqlGenerator
 {
@@ -22,27 +21,19 @@ namespace SqlGenerator
 
     public class ComparisonExpression : ITruthy
     {
-        private readonly IExpression _lhs;
-        private readonly ComparisonOperator _op;
-        private readonly IExpression _rhs;
+        public IExpression Lhs { get; }
+        public ComparisonOperator Op { get; }
+        public IExpression Rhs { get; }
 
         public ComparisonExpression(IExpression lhs, ComparisonOperator op, IExpression rhs)
         {
-            _lhs = lhs;
-            _op = op;
-            _rhs = rhs;
+            Lhs = lhs;
+            Op = op;
+            Rhs = rhs;
         }
 
-        public void Build(StringBuilder sb)
-        {
-            _lhs.Build(sb);
-            sb.Append(" ");
-            sb.Append(GetOperatorValue(_op));
-            sb.Append(" ");
-            _rhs.Build(sb);
-        }
 
-        private static string GetOperatorValue(ComparisonOperator op)
+        public static string GetOperatorValue(ComparisonOperator op)
         {
             return op switch
             {
@@ -59,27 +50,17 @@ namespace SqlGenerator
 
     public class Junction : ITruthy
     {
-        private readonly ITruthy _lhs;
-        private readonly JunctionOp _op;
-        private readonly ITruthy _rhs;
+        public ITruthy Lhs { get; }
+        public JunctionOp Op { get; }
+        public ITruthy Rhs { get; }
 
         public Junction(ITruthy lhs, JunctionOp op, ITruthy rhs)
         {
-            _lhs = lhs;
-            _op = op;
-            _rhs = rhs;
+            Lhs = lhs;
+            Op = op;
+            Rhs = rhs;
         }
 
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("(");
-            _lhs.Build(sb);
-            sb.Append(") ");
-            sb.Append(GetOperatorValue(_op));
-            sb.Append(" (");
-            _rhs.Build(sb);
-            sb.Append(")");
-        }
 
         public static string GetOperatorValue(JunctionOp op)
         {
@@ -94,139 +75,71 @@ namespace SqlGenerator
 
     public class Junctions : ITruthy
     {
-        private readonly JunctionOp _op;
-        private readonly IEnumerable<ITruthy> _truthies;
+        public JunctionOp Op { get; }
+        public IEnumerable<ITruthy> Truthies { get; }
 
         public Junctions(JunctionOp op, params ITruthy[] truthies)
         {
-            _op = op;
-            _truthies = truthies;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            string op = $" {Junction.GetOperatorValue(_op)} ";
-            sb.Append("(");
-            QueryHelper.BuildJoinedExpression(sb, op, _truthies, (part, builder) =>
-            {
-                sb.Append("(");
-                part.Build(builder);
-                sb.Append(")");
-            });
-            sb.Append(")");
+            Op = op;
+            Truthies = truthies;
         }
     }
 
     public class IsNullExpression : ITruthy
     {
-        private readonly IExpression _expr;
+        public IExpression Expr { get; }
 
         public IsNullExpression(IExpression expr)
         {
-            _expr = expr;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("(");
-            _expr.Build(sb);
-            sb.Append(") IS Null");
+            Expr = expr;
         }
     }
 
     public class InExpression : ITruthy
     {
-        private readonly IExpression _lhr;
-        private readonly IExpression _rhr;
+        public IExpression Lhr { get; }
+        public IExpression Rhr { get; }
 
         public InExpression(IExpression lhr, IExpression rhr)
         {
-            _lhr = lhr;
-            _rhr = rhr;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            _lhr.Build(sb);
-            sb.Append(" IN (");
-            _rhr.Build(sb);
-            sb.Append(")");
+            Lhr = lhr;
+            Rhr = rhr;
         }
     }
 
     public class LikeExpression : ITruthy
     {
-        private readonly IExpression _lhr;
-        private readonly IExpression _rhs;
+        public IExpression Lhr { get; }
+        public IExpression Rhs { get; }
 
         public LikeExpression(IExpression lhr, IExpression rhs)
         {
-            _lhr = lhr;
-            _rhs = rhs;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            _lhr.Build(sb);
-            sb.Append(" LIKE ");
-            if (_rhs is LiteralExpression rhs)
-            {
-                if (rhs.Literal is string)
-                {
-                    _rhs.Build(sb);
-                }
-                else
-                {
-                    sb.Append("'");
-                    _rhs.Build(sb);
-                    sb.Append("'");
-                }
-            }
-            else
-            {
-                _rhs.Build(sb);
-            }
+            Lhr = lhr;
+            Rhs = rhs;
         }
     }
 
     public class NotExpression : ITruthy
     {
-        private readonly ITruthy _expr;
+        public ITruthy Expr { get; }
 
         public NotExpression(ITruthy expr)
         {
-            _expr = expr;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("NOT (");
-            _expr.Build(sb);
-            sb.Append(")");
+            Expr = expr;
         }
     }
 
     public class PlaceholderExpression : IExpression
     {
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("?");
-        }
     }
 
     public class WhereClause : IQueryPart
     {
-        private readonly ITruthy _expr;
+        public ITruthy Expr { get; }
 
         public WhereClause(ITruthy expr)
         {
-            _expr = expr;
-        }
-
-        public void Build(StringBuilder sb)
-        {
-            sb.Append("WHERE ");
-            _expr.Build(sb);
+            Expr = expr;
         }
     }
 }
