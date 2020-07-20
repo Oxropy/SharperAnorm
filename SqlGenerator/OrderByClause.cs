@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace SqlGenerator
@@ -8,7 +9,7 @@ namespace SqlGenerator
         Descending
     }
 
-    public class SortOrderClause : IOrderBy
+    public class SortOrderClause : IExpression
     {
         public FieldReferenceExpression Field { get; }
         public SortOrder Sort { get; }
@@ -22,9 +23,9 @@ namespace SqlGenerator
 
     public class OrderByClause : IQueryPart
     {
-        public IEnumerable<IOrderBy> OrderBy { get; }
+        public IEnumerable<IExpression> OrderBy { get; }
 
-        public OrderByClause(IEnumerable<IOrderBy> orderBy)
+        public OrderByClause(IEnumerable<IExpression> orderBy)
         {
             OrderBy = orderBy;
         }

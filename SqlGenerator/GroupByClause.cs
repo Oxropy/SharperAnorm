@@ -4,9 +4,9 @@ namespace SqlGenerator
 {
     public class GroupByClause : IQueryPart
     {
-        public IEnumerable<IGroupBy> GroupBy { get; }
+        public IEnumerable<IExpression> GroupBy { get; }
 
-        public GroupByClause(IEnumerable<IGroupBy> groupBy)
+        public GroupByClause(IEnumerable<IExpression> groupBy)
         {
             GroupBy = groupBy;
         }

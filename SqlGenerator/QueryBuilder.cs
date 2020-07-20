@@ -33,15 +33,7 @@ namespace SqlGenerator
     public interface ILiteralExpression : IExpression
     {
     }
-
-    public interface IOrderBy : IQueryPart
-    {
-    }
-
-    public interface IGroupBy : IQueryPart
-    {
-    }
-
+    
     public interface ICreate : IQueryPart
     {
     }
@@ -77,7 +69,7 @@ namespace SqlGenerator
         }
     }
 
-    public class FieldReferenceExpression : IExpression, ISelection, IOrderBy, IGroupBy
+    public class FieldReferenceExpression : IExpression, ISelection
     {
         public string Name { get; }
         public string FieldName { get; }
@@ -371,7 +363,7 @@ namespace SqlGenerator
 
         #region Order By
 
-        public static OrderByClause OrderBy(params IOrderBy[] orderBy)
+        public static OrderByClause OrderBy(params IExpression[] orderBy)
         {
             return new OrderByClause(orderBy);
         }
@@ -380,7 +372,7 @@ namespace SqlGenerator
 
         #region Group By
 
-        public static GroupByClause GroupBy(params IGroupBy[] groupBy)
+        public static GroupByClause GroupBy(params IExpression[] groupBy)
         {
             return new GroupByClause(groupBy);
         }

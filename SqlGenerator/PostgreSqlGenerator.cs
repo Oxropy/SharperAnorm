@@ -12,116 +12,26 @@ namespace SqlGenerator
         {
             switch (queryPart)
             {
+                case CreateClause creat:
+                    Build(creat, sb);
+                    break;
                 case ConnectQueryExpression connectQuery:
                     Build(connectQuery, sb);
                     break;
-                case ComparisonExpression comparison:
-                    Build(comparison, sb);
-                    break;
-                case BaseTypeColumnDefinition baseTypeColumn:
-                    Build(baseTypeColumn, sb);
-                    break;
-                case CreateClause create:
-                    Build(create, sb);
-                    break;
                 case DeleteClause delete:
-                    Build(delete, sb);
-                    break;
-                case DeleteStatement delete:
                     Build(delete, sb);
                     break;
                 case DropClause drop:
                     Build(drop, sb);
                     break;
-                case FieldAliasExpression fieldAlias:
-                    Build(fieldAlias, sb);
-                    break;
-                case FieldReferenceExpression fieldReference:
-                    Build(fieldReference, sb);
-                    break;
                 case FromClause from:
                     Build(from, sb);
-                    break;
-                case FunctionCallExpression functionCall:
-                    Build(functionCall, sb);
                     break;
                 case GroupByClause groupBy:
                     Build(groupBy, sb);
                     break;
-                case ICreate create:
-                    Build(create, sb);
-                    break;
-                case LiteralExpression literal:
-                    Build(literal, sb);
-                    break;
-                case ILiteralExpression literal:
-                    Build(literal, sb);
-                    break;
-                case InExpression inExpression:
-                    Build(inExpression, sb);
-                    break;
-                case IsNullExpression isNull:
-                    Build(isNull, sb);
-                    break;
-                case Junction junction:
-                    Build(junction, sb);
-                    break;
-                case Junctions junctions:
-                    Build(junctions, sb);
-                    break;
-                case LikeExpression like:
-                    Build(like, sb);
-                    break;
-                case NotExpression not:
-                    Build(not, sb);
-                    break;
-                case ITruthy truthy:
-                    Build(truthy, sb);
-                    break;
-                case ListExpression list:
-                    Build(list, sb);
-                    break;
-                case PlaceholderExpression placeholder:
-                    Build(placeholder, sb);
-                    break;
-                case IExpression expression:
-                    Build(expression, sb);
-                    break;
-                case IGroupBy groupBy:
-                    Build(groupBy, sb);
-                    break;
                 case InsertClause insert:
                     Build(insert, sb);
-                    break;
-                case InsertStatement insert:
-                    Build(insert, sb);
-                    break;
-                case SortOrderClause sortOrder:
-                    Build(sortOrder, sb);
-                    break;
-                case IOrderBy orderBy:
-                    Build(orderBy, sb);
-                    break;
-                case SelectStatement select:
-                    Build(select, sb);
-                    break;
-                case UpdateStatement update:
-                    Build(update, sb);
-                    break;
-                case IQuery query:
-                    Build(query, sb);
-                    break;
-                case JoinCondition join:
-                    Build(join, sb);
-                    break;
-                case TableName tableName:
-                    Build(tableName, sb);
-                    break;
-                case ITableName tableName:
-                    Build(tableName, sb);
-                    break;
-                case ISelection selection:
-                    Build(selection, sb);
                     break;
                 case OrderByClause orderBy:
                     Build(orderBy, sb);
@@ -135,12 +45,33 @@ namespace SqlGenerator
                 case WhereClause where:
                     Build(where, sb);
                     break;
+                case ILiteralExpression literal:
+                    Build(literal, sb);
+                    break;
+                case ITableName tableName:
+                    Build(tableName, sb);
+                    break;
+                case ISelection selection:
+                    Build(selection, sb);
+                    break;
+                case ICreate create:
+                    Build(create, sb);
+                    break;
+                case ITruthy truthy:
+                    Build(truthy, sb);
+                    break;
+                case IExpression expression:
+                    Build(expression, sb);
+                    break;
+                case IQuery query:
+                    Build(query, sb);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(queryPart));
             }
         }
 
-        public void Build(ISelection selection, StringBuilder sb)
+        private void Build(ISelection selection, StringBuilder sb)
         {
             switch (selection)
             {
@@ -167,7 +98,7 @@ namespace SqlGenerator
             }
         }
 
-        public void Build(ITableName name, StringBuilder sb)
+        private void Build(ITableName name, StringBuilder sb)
         {
             switch (name)
             {
@@ -182,7 +113,7 @@ namespace SqlGenerator
             }
         }
 
-        public void Build(IExpression expression, StringBuilder sb)
+        private void Build(IExpression expression, StringBuilder sb)
         {
             switch (expression)
             {
@@ -228,12 +159,15 @@ namespace SqlGenerator
                 case PlaceholderExpression placeholder:
                     Build(placeholder, sb);
                     break;
+                case SortOrderClause orderClause:
+                    Build(orderClause, sb);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(expression));
             }
         }
 
-        public void Build(ITruthy truthy, StringBuilder sb)
+        private void Build(ITruthy truthy, StringBuilder sb)
         {
             switch (truthy)
             {
@@ -263,7 +197,7 @@ namespace SqlGenerator
             }
         }
 
-        public void Build(ILiteralExpression literal, StringBuilder sb)
+        private static void Build(ILiteralExpression literal, StringBuilder sb)
         {
             switch (literal)
             {
@@ -275,34 +209,7 @@ namespace SqlGenerator
             }
         }
 
-        public void Build(IOrderBy orderBy, StringBuilder sb)
-        {
-            switch (orderBy)
-            {
-                case FieldReferenceExpression fieldReference:
-                    Build(fieldReference, sb);
-                    break;
-                case SortOrderClause orderClause:
-                    Build(orderClause, sb);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(orderBy));
-            }
-        }
-
-        public void Build(IGroupBy groupBy, StringBuilder sb)
-        {
-            switch (groupBy)
-            {
-                case FieldReferenceExpression fieldReference:
-                    Build(fieldReference, sb);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(groupBy));
-            }
-        }
-
-        public void Build(ICreate create, StringBuilder sb)
+        private static void Build(ICreate create, StringBuilder sb)
         {
             switch (create)
             {
@@ -314,18 +221,39 @@ namespace SqlGenerator
             }
         }
 
+        private void Build(IQuery query, StringBuilder sb)
+        {
+            switch (query)
+            {
+                case DeleteStatement delete:
+                    Build(delete, sb);
+                    break;
+                case InsertStatement insert:
+                    Build(insert, sb);
+                    break;
+                case SelectStatement select:
+                    Build(select, sb);
+                    break;
+                case UpdateStatement update:
+                    Build(update, sb);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(query));
+            }
+        }
+        
         #endregion
 
         #region General
 
-        public void Build(ConnectQueryExpression expression, StringBuilder sb)
+        private void Build(ConnectQueryExpression expression, StringBuilder sb)
         {
             Build(expression.Lhs, sb);
             sb.Append(" ");
             Build(expression.Rhs, sb);
         }
 
-        public void Build(LiteralExpression expression, StringBuilder sb)
+        private static void Build(LiteralExpression expression, StringBuilder sb)
         {
             if (expression.Literal is string literal)
             {
@@ -339,7 +267,7 @@ namespace SqlGenerator
             }
         }
 
-        public void Build(FieldReferenceExpression expression, StringBuilder sb)
+        private static void Build(FieldReferenceExpression expression, StringBuilder sb)
         {
             if (!string.IsNullOrWhiteSpace(expression.Name))
             {
@@ -350,7 +278,7 @@ namespace SqlGenerator
             sb.Append(expression.FieldName);
         }
 
-        public void Build(FunctionCallExpression expression, StringBuilder sb)
+        private void Build(FunctionCallExpression expression, StringBuilder sb)
         {
             sb.Append(expression.FunctionName);
             sb.Append("(");
@@ -358,7 +286,7 @@ namespace SqlGenerator
             sb.Append(")");
         }
 
-        public void Build(ListExpression expression, StringBuilder sb)
+        private void Build(ListExpression expression, StringBuilder sb)
         {
             QueryHelper.BuildJoinedExpression(sb, ", ", expression.Expressions, this);
         }
@@ -367,14 +295,14 @@ namespace SqlGenerator
 
         #region Create
 
-        public void Build(BaseTypeColumnDefinition definition, StringBuilder sb)
+        private static void Build(BaseTypeColumnDefinition definition, StringBuilder sb)
         {
             sb.Append(definition.Name);
             sb.Append(" ");
             sb.Append(definition.GetTypeValue(definition.Type1));
         }
 
-        public void Build(CreateClause clause, StringBuilder sb)
+        private void Build(CreateClause clause, StringBuilder sb)
         {
             sb.Append("CREATE TABLE ");
             if (clause.IfNotExist)
@@ -392,7 +320,7 @@ namespace SqlGenerator
 
         #region Drop
 
-        public void Build(DropClause clause, StringBuilder sb)
+        private static void Build(DropClause clause, StringBuilder sb)
         {
             sb.Append("DROP TABLE ");
             sb.Append(clause.Table);
@@ -402,7 +330,7 @@ namespace SqlGenerator
 
         #region Insert
 
-        public void Build(InsertClause clause, StringBuilder sb)
+        private static void Build(InsertClause clause, StringBuilder sb)
         {
             const string seperator = ", ";
             sb.Append("INSERT INTO ");
@@ -416,7 +344,7 @@ namespace SqlGenerator
             sb.Append(")");
         }
 
-        public void Build(InsertStatement statement, StringBuilder sb)
+        private static void Build(InsertStatement statement, StringBuilder sb)
         {
             Build(statement.InsertClause, sb);
         }
@@ -425,13 +353,13 @@ namespace SqlGenerator
 
         #region Delete
 
-        public void Build(DeleteClause clause, StringBuilder sb)
+        private static void Build(DeleteClause clause, StringBuilder sb)
         {
             sb.Append("DELETE FROM ");
             sb.Append(clause.Table);
         }
 
-        public void Build(DeleteStatement statement, StringBuilder sb)
+        private void Build(DeleteStatement statement, StringBuilder sb)
         {
             Build(statement.Delete, sb);
             QueryHelper.AppendQueryPart(this, sb, statement.Where);
@@ -441,7 +369,7 @@ namespace SqlGenerator
 
         #region Where
 
-        public void Build(ComparisonExpression expression, StringBuilder sb)
+        private void Build(ComparisonExpression expression, StringBuilder sb)
         {
             Build(expression.Lhs, sb);
             sb.Append(" ");
@@ -450,7 +378,7 @@ namespace SqlGenerator
             Build(expression.Rhs, sb);
         }
 
-        public void Build(Junction junction, StringBuilder sb)
+        private void Build(Junction junction, StringBuilder sb)
         {
             sb.Append("(");
             Build(junction.Lhs, sb);
@@ -461,7 +389,7 @@ namespace SqlGenerator
             sb.Append(")");
         }
 
-        public void Build(Junctions junctions, StringBuilder sb)
+        private void Build(Junctions junctions, StringBuilder sb)
         {
             string op = $" {Junction.GetOperatorValue(junctions.Op)} ";
             sb.Append("(");
@@ -474,14 +402,14 @@ namespace SqlGenerator
             sb.Append(")");
         }
 
-        public void Build(IsNullExpression expression, StringBuilder sb)
+        private void Build(IsNullExpression expression, StringBuilder sb)
         {
             sb.Append("(");
             Build(expression.Expr, sb);
             sb.Append(") IS Null");
         }
 
-        public void Build(InExpression expression, StringBuilder sb)
+        private void Build(InExpression expression, StringBuilder sb)
         {
             Build(expression.Lhr, sb);
             sb.Append(" IN (");
@@ -489,7 +417,7 @@ namespace SqlGenerator
             sb.Append(")");
         }
 
-        public void Build(LikeExpression expression, StringBuilder sb)
+        private void Build(LikeExpression expression, StringBuilder sb)
         {
             Build(expression.Lhr, sb);
             sb.Append(" LIKE ");
@@ -512,19 +440,19 @@ namespace SqlGenerator
             }
         }
 
-        public void Build(NotExpression expression, StringBuilder sb)
+        private void Build(NotExpression expression, StringBuilder sb)
         {
             sb.Append("NOT (");
             Build(expression.Expr, sb);
             sb.Append(")");
         }
 
-        public void Build(PlaceholderExpression expression, StringBuilder sb)
+        private static void Build(PlaceholderExpression expression, StringBuilder sb)
         {
             sb.Append("?");
         }
 
-        public void Build(WhereClause clause, StringBuilder sb)
+        private void Build(WhereClause clause, StringBuilder sb)
         {
             sb.Append("WHERE ");
             Build(clause.Expr, sb);
@@ -534,7 +462,7 @@ namespace SqlGenerator
 
         #region Select
 
-        public void Build(FieldAliasExpression expression, StringBuilder sb)
+        private void Build(FieldAliasExpression expression, StringBuilder sb)
         {
             sb.Append("(");
             Build(expression.Expr, sb);
@@ -542,13 +470,13 @@ namespace SqlGenerator
             sb.Append(expression.Alias);
         }
 
-        public void Build(SelectClause clause, StringBuilder sb)
+        private void Build(SelectClause clause, StringBuilder sb)
         {
             sb.Append("SELECT ");
             QueryHelper.BuildJoinedExpression(sb, ", ", clause.Sel, this);
         }
 
-        public void Build(SelectStatement statement, StringBuilder sb)
+        private void Build(SelectStatement statement, StringBuilder sb)
         {
             Build(statement.Select, sb);
             sb.Append(" ");
@@ -562,7 +490,7 @@ namespace SqlGenerator
 
         #region Update
 
-        public void Build(UpdateClause clause, StringBuilder sb)
+        private static void Build(UpdateClause clause, StringBuilder sb)
         {
             sb.Append("UPDATE ");
             sb.Append(clause.Table);
@@ -577,7 +505,7 @@ namespace SqlGenerator
             sb.Append(")");
         }
 
-        public void Build(UpdateStatement statement, StringBuilder sb)
+        private void Build(UpdateStatement statement, StringBuilder sb)
         {
             Build(statement.Update, sb);
             QueryHelper.AppendQueryPart(this, sb, statement.Where);
@@ -587,7 +515,7 @@ namespace SqlGenerator
 
         #region From
 
-        public void Build(TableName table, StringBuilder sb)
+        private static void Build(TableName table, StringBuilder sb)
         {
             sb.Append(table.Table);
             if (string.IsNullOrWhiteSpace(table.Alias))
@@ -599,7 +527,7 @@ namespace SqlGenerator
             sb.Append(table.Alias);
         }
 
-        public void Build(JoinCondition condition, StringBuilder sb)
+        private void Build(JoinCondition condition, StringBuilder sb)
         {
             Build(condition.Table, sb);
             sb.Append(" ");
@@ -626,7 +554,7 @@ namespace SqlGenerator
             };
         }
 
-        public void Build(FromClause clause, StringBuilder sb)
+        private void Build(FromClause clause, StringBuilder sb)
         {
             sb.Append("FROM ");
             Build(clause.Table, sb);
@@ -636,14 +564,14 @@ namespace SqlGenerator
 
         #region Order by
 
-        public void Build(SortOrderClause clause, StringBuilder sb)
+        private static void Build(SortOrderClause clause, StringBuilder sb)
         {
             Build(clause.Field, sb);
             sb.Append(" ");
             sb.Append(GetSortOrderValue(clause.Sort));
         }
 
-        public void Build(OrderByClause clause, StringBuilder sb)
+        private void Build(OrderByClause clause, StringBuilder sb)
         {
             sb.Append("ORDER BY ");
             QueryHelper.BuildJoinedExpression(sb, ", ", clause.OrderBy, this);
@@ -663,7 +591,7 @@ namespace SqlGenerator
 
         #region Group by
 
-        public void Build(GroupByClause clause, StringBuilder sb)
+        private void Build(GroupByClause clause, StringBuilder sb)
         {
             sb.Append("GROUP BY ");
             QueryHelper.BuildJoinedExpression(sb, ", ", clause.GroupBy, this);
