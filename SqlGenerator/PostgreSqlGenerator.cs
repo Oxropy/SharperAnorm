@@ -1,12 +1,35 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SqlGenerator.DDL;
+using SqlGenerator.DML;
+using SqlGenerator.DML.FieldAndTable;
+using SqlGenerator.DML.Truthy;
 
 namespace SqlGenerator
 {
     public class PostgreSqlGenerator : IGenerator
     {
-        #region Interface
+        public const char ParameterPrefix = ':';
+        
+        public string GetQuery(IQueryPart queryPart)
+        {
+            var sb = new StringBuilder();
+
+            Build(queryPart, sb);
+
+            return sb.ToString();
+        }
+
+        public IEnumerable<ParameterExpression> GetParameters(IQueryPart queryPart)
+        {
+            var parameters = new List<ParameterExpression>();
+
+            GetParameters(queryPart, parameters);
+
+            return parameters;
+        }
 
         public void Build(IQueryPart queryPart, StringBuilder sb)
         {
@@ -14,100 +37,65 @@ namespace SqlGenerator
             {
                 case CreateClause creat:
                     Build(creat, sb);
-                    break;
+                    return;
                 case ConnectQueryExpression connectQuery:
                     Build(connectQuery, sb);
-                    break;
+                    return;
                 case DeleteClause delete:
                     Build(delete, sb);
-                    break;
+                    return;
                 case DropClause drop:
                     Build(drop, sb);
-                    break;
+                    return;
                 case FromClause from:
                     Build(from, sb);
-                    break;
+                    return;
                 case GroupByClause groupBy:
                     Build(groupBy, sb);
-                    break;
-                case InsertClause insert:
-                    Build(insert, sb);
-                    break;
+                    return;
+                case TableAndFieldValues tableAndFieldValues:
+                    Build(tableAndFieldValues, sb);
+                    return;
                 case OrderByClause orderBy:
                     Build(orderBy, sb);
-                    break;
+                    return;
                 case SelectClause select:
                     Build(select, sb);
-                    break;
-                case UpdateClause update:
-                    Build(update, sb);
-                    break;
+                    return;
                 case WhereClause where:
                     Build(where, sb);
-                    break;
-                case ILiteralExpression literal:
-                    Build(literal, sb);
-                    break;
+                    return;
                 case ITableName tableName:
                     Build(tableName, sb);
-                    break;
-                case ISelection selection:
-                    Build(selection, sb);
-                    break;
+                    return;
                 case ICreate create:
                     Build(create, sb);
-                    break;
-                case ITruthy truthy:
-                    Build(truthy, sb);
-                    break;
+                    return;
                 case IExpression expression:
                     Build(expression, sb);
-                    break;
+                    return;
                 case IQuery query:
                     Build(query, sb);
-                    break;
+                    return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(queryPart));
             }
         }
 
-        private void Build(ISelection selection, StringBuilder sb)
-        {
-            switch (selection)
-            {
-                case FieldAliasExpression fieldAlias:
-                    Build(fieldAlias, sb);
-                    break;
-                case FieldReferenceExpression fieldReference:
-                    Build(fieldReference, sb);
-                    break;
-                case FunctionCallExpression functionCall:
-                    Build(functionCall, sb);
-                    break;
-                case JoinCondition join:
-                    Build(join, sb);
-                    break;
-                case TableName tableName:
-                    Build(tableName, sb);
-                    break;
-                case ITableName tableName:
-                    Build(tableName, sb);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(selection));
-            }
-        }
+        #region Build
 
+        #region Interfaces
+        
         private void Build(ITableName name, StringBuilder sb)
         {
             switch (name)
             {
                 case TableName tableName:
                     Build(tableName, sb);
-                    break;
+                    return;
                 case JoinCondition joinCondition:
                     Build(joinCondition, sb);
-                    break;
+                    return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(name));
             }
@@ -117,95 +105,71 @@ namespace SqlGenerator
         {
             switch (expression)
             {
-                case FieldReferenceExpression fieldReference:
-                    Build(fieldReference, sb);
-                    break;
-                case ComparisonExpression comparison:
-                    Build(comparison, sb);
-                    break;
-                case FunctionCallExpression functionCall:
-                    Build(functionCall, sb);
-                    break;
-                case LiteralExpression literal:
-                    Build(literal, sb);
-                    break;
-                case ILiteralExpression literal:
-                    Build(literal, sb);
-                    break;
-                case InExpression inExpression:
-                    Build(inExpression, sb);
-                    break;
-                case IsNullExpression isNull:
-                    Build(isNull, sb);
-                    break;
-                case Junction junction:
-                    Build(junction, sb);
-                    break;
-                case Junctions junctions:
-                    Build(junctions, sb);
-                    break;
-                case LikeExpression like:
-                    Build(like, sb);
-                    break;
-                case NotExpression not:
-                    Build(not, sb);
-                    break;
+                case IValue value:
+                    Build(value, sb);
+                    return;
                 case ITruthy truthy:
                     Build(truthy, sb);
-                    break;
-                case ListExpression list:
-                    Build(list, sb);
-                    break;
-                case PlaceholderExpression placeholder:
-                    Build(placeholder, sb);
-                    break;
+                    return;
                 case SortOrderClause orderClause:
                     Build(orderClause, sb);
-                    break;
+                    return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(expression));
             }
         }
 
+        private void Build(IValue value, StringBuilder sb)
+        {
+            switch (value)
+            {
+                case FieldReferenceExpression fieldReference:
+                    Build(fieldReference, sb);
+                    return;
+                case FunctionCallExpression functionCall:
+                    Build(functionCall, sb);
+                    return;
+                case FieldAliasExpression fieldAlias:
+                    Build(fieldAlias, sb);
+                    return;
+                case LiteralExpression literal:
+                    Build(literal, sb);
+                    return;
+                case ParameterExpression parameter:
+                    Build(parameter, sb);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(value));
+            }
+        }
+        
         private void Build(ITruthy truthy, StringBuilder sb)
         {
             switch (truthy)
             {
                 case ComparisonExpression comparison:
                     Build(comparison, sb);
-                    break;
+                    return;
                 case InExpression inExpression:
                     Build(inExpression, sb);
-                    break;
+                    return;
                 case IsNullExpression isNull:
                     Build(isNull, sb);
-                    break;
+                    return;
                 case Junction junction:
                     Build(junction, sb);
-                    break;
+                    return;
                 case Junctions junctions:
                     Build(junctions, sb);
-                    break;
+                    return;
                 case LikeExpression like:
                     Build(like, sb);
-                    break;
+                    return;
                 case NotExpression not:
                     Build(not, sb);
-                    break;
+                    return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(truthy));
-            }
-        }
-
-        private static void Build(ILiteralExpression literal, StringBuilder sb)
-        {
-            switch (literal)
-            {
-                case LiteralExpression literalExpression:
-                    Build(literalExpression, sb);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(literal));
             }
         }
 
@@ -215,7 +179,7 @@ namespace SqlGenerator
             {
                 case BaseTypeColumnDefinition baseTypeColumn:
                     Build(baseTypeColumn, sb);
-                    break;
+                    return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(create));
             }
@@ -227,24 +191,39 @@ namespace SqlGenerator
             {
                 case DeleteStatement delete:
                     Build(delete, sb);
-                    break;
+                    return;
                 case InsertStatement insert:
                     Build(insert, sb);
-                    break;
+                    return;
                 case SelectStatement select:
                     Build(select, sb);
-                    break;
+                    return;
                 case UpdateStatement update:
                     Build(update, sb);
-                    break;
+                    return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(query));
             }
         }
-        
+
         #endregion
 
         #region General
+
+        private void Build(TableAndFieldValues tableAndFieldValues, StringBuilder sb)
+        {
+            switch (tableAndFieldValues)
+            {
+                case InsertClause insert:
+                    Build(insert, sb);
+                    return;
+                case UpdateClause update:
+                    Build(update, sb);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tableAndFieldValues));
+            }
+        }
 
         private void Build(ConnectQueryExpression expression, StringBuilder sb)
         {
@@ -267,11 +246,17 @@ namespace SqlGenerator
             }
         }
 
+        private static void Build(ParameterExpression expression, StringBuilder sb)
+        {
+            sb.Append(ParameterPrefix);
+            sb.Append(expression.Name);
+        }
+
         private static void Build(FieldReferenceExpression expression, StringBuilder sb)
         {
-            if (!string.IsNullOrWhiteSpace(expression.Name))
+            if (!string.IsNullOrWhiteSpace(expression.TableName))
             {
-                sb.Append(expression.Name);
+                sb.Append(expression.TableName);
                 sb.Append(".");
             }
 
@@ -285,12 +270,7 @@ namespace SqlGenerator
             QueryHelper.BuildJoinedExpression(sb, ", ", expression.Parameters, this);
             sb.Append(")");
         }
-
-        private void Build(ListExpression expression, StringBuilder sb)
-        {
-            QueryHelper.BuildJoinedExpression(sb, ", ", expression.Expressions, this);
-        }
-
+        
         #endregion
 
         #region Create
@@ -299,12 +279,13 @@ namespace SqlGenerator
         {
             sb.Append(definition.Name);
             sb.Append(" ");
-            sb.Append(definition.GetTypeValue(definition.Type1));
+            sb.Append(definition.GetTypeValue(definition.Type));
         }
 
         private void Build(CreateClause clause, StringBuilder sb)
         {
-            sb.Append("CREATE TABLE ");
+            sb.Append("CREATE TABLE");
+            sb.Append(" ");
             if (clause.IfNotExist)
             {
                 sb.Append("IF NOT EXISTS ");
@@ -322,7 +303,8 @@ namespace SqlGenerator
 
         private static void Build(DropClause clause, StringBuilder sb)
         {
-            sb.Append("DROP TABLE ");
+            sb.Append("DROP TABLE");
+            sb.Append(" ");
             sb.Append(clause.Table);
         }
 
@@ -330,21 +312,22 @@ namespace SqlGenerator
 
         #region Insert
 
-        private static void Build(InsertClause clause, StringBuilder sb)
+        private void Build(InsertClause clause, StringBuilder sb)
         {
             const string seperator = ", ";
-            sb.Append("INSERT INTO ");
+            sb.Append("INSERT INTO");
+            sb.Append(" ");
             sb.Append(clause.Table);
             sb.Append(" (");
-            QueryHelper.BuildSeperated(sb, seperator, clause.Values.Select(v => v.field), (part, builder) => builder.Append(part));
+            QueryHelper.BuildSeperated(sb, seperator, clause.Values.Select(v => v.Field), (part, builder) => builder.Append(part));
             sb.Append(") ");
             sb.Append("VALUES ");
             sb.Append("(");
-            QueryHelper.BuildSeperated(sb, seperator, clause.Values.Select(v => v.value), (part, builder) => builder.Append(part));
+            QueryHelper.BuildJoinedExpression(sb, seperator, clause.Values.Select(v => v.Value), this);
             sb.Append(")");
         }
 
-        private static void Build(InsertStatement statement, StringBuilder sb)
+        private void Build(InsertStatement statement, StringBuilder sb)
         {
             Build(statement.InsertClause, sb);
         }
@@ -355,7 +338,8 @@ namespace SqlGenerator
 
         private static void Build(DeleteClause clause, StringBuilder sb)
         {
-            sb.Append("DELETE FROM ");
+            sb.Append("DELETE FROM");
+            sb.Append(" ");
             sb.Append(clause.Table);
         }
 
@@ -391,7 +375,7 @@ namespace SqlGenerator
 
         private void Build(Junctions junctions, StringBuilder sb)
         {
-            string op = $" {Junction.GetOperatorValue(junctions.Op)} ";
+            var op = $" {Junction.GetOperatorValue(junctions.Op)} ";
             sb.Append("(");
             QueryHelper.BuildJoinedExpression(sb, op, junctions.Truthies, (part, builder) =>
             {
@@ -411,32 +395,25 @@ namespace SqlGenerator
 
         private void Build(InExpression expression, StringBuilder sb)
         {
-            Build(expression.Lhr, sb);
+            Build(expression.Lhs, sb);
             sb.Append(" IN (");
-            Build(expression.Rhr, sb);
+            Build(expression.Rhs, sb);
             sb.Append(")");
         }
 
         private void Build(LikeExpression expression, StringBuilder sb)
         {
-            Build(expression.Lhr, sb);
+            Build(expression.Lhs, sb);
             sb.Append(" LIKE ");
-            if (expression.Rhs is LiteralExpression rhs)
+            if (expression.Rhs is LiteralExpression rhs && rhs.Literal is string)
             {
-                if (rhs.Literal is string)
-                {
-                    Build(expression.Rhs, sb);
-                }
-                else
-                {
-                    sb.Append("'");
-                    Build(expression.Rhs, sb);
-                    sb.Append("'");
-                }
+                Build(expression.Rhs, sb);
             }
             else
             {
+                sb.Append("'");
                 Build(expression.Rhs, sb);
+                sb.Append("'");
             }
         }
 
@@ -445,11 +422,6 @@ namespace SqlGenerator
             sb.Append("NOT (");
             Build(expression.Expr, sb);
             sb.Append(")");
-        }
-
-        private static void Build(PlaceholderExpression expression, StringBuilder sb)
-        {
-            sb.Append("?");
         }
 
         private void Build(WhereClause clause, StringBuilder sb)
@@ -490,17 +462,16 @@ namespace SqlGenerator
 
         #region Update
 
-        private static void Build(UpdateClause clause, StringBuilder sb)
+        private void Build(UpdateClause clause, StringBuilder sb)
         {
             sb.Append("UPDATE ");
             sb.Append(clause.Table);
             sb.Append(" SET (");
             QueryHelper.BuildSeperated(sb, ", ", clause.Values, (part, builder) =>
             {
-                (string field, object value) = part;
-                sb.Append(field);
+                sb.Append(part.Field);
                 sb.Append(" = ");
-                sb.Append(value);
+                Build(part.Value, builder);
             });
             sb.Append(")");
         }
@@ -564,9 +535,9 @@ namespace SqlGenerator
 
         #region Order by
 
-        private static void Build(SortOrderClause clause, StringBuilder sb)
+        private void Build(SortOrderClause clause, StringBuilder sb)
         {
-            Build(clause.Field, sb);
+            Build(clause.Value, sb);
             sb.Append(" ");
             sb.Append(GetSortOrderValue(clause.Sort));
         }
@@ -596,6 +567,366 @@ namespace SqlGenerator
             sb.Append("GROUP BY ");
             QueryHelper.BuildJoinedExpression(sb, ", ", clause.GroupBy, this);
         }
+
+        #endregion
+
+        #endregion
+
+        #region GetParameters
+
+        #region Interfaces
+
+        private static void GetParameters(IQueryPart queryPart, ICollection<ParameterExpression> parameters)
+        {
+            switch (queryPart)
+            {
+                case ConnectQueryExpression connectQuery:
+                    GetParameters(connectQuery, parameters);
+                    return;
+                case TableAndFieldValues tableAndFieldValues:
+                    GetParameters(tableAndFieldValues, parameters);
+                    return;
+                case SelectClause select:
+                    GetParameters(select, parameters);
+                    return;
+                case WhereClause where:
+                    GetParameters(where, parameters);
+                    return;
+                case ITableName tableName:
+                    GetParameters(tableName, parameters);
+                    return;
+                case IExpression expression:
+                    GetParameters(expression, parameters);
+                    return;
+                case IQuery query:
+                    GetParameters(query, parameters);
+                    return;
+                case GroupByClause groupBy:
+                    GetParameters(groupBy, parameters);
+                    return;
+                case OrderByClause orderBy:
+                    GetParameters(orderBy, parameters);
+                    return;
+                case FromClause fromClause:
+                    GetParameters(fromClause, parameters);
+                    return;
+                case CreateClause _:
+                case DeleteClause _:
+                case DropClause _:
+                case ICreate _:
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(queryPart));
+            }
+        }
+        
+        private static void GetParameters(ITableName tableName, ICollection<ParameterExpression> parameters)
+        {
+            switch (tableName)
+            {
+                case JoinCondition joinCondition:
+                    GetParameters(joinCondition, parameters);
+                    return;
+                case TableName _:
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tableName));
+            }
+        }
+
+        private static void GetParameters(IExpression expression, ICollection<ParameterExpression> parameters)
+        {
+            switch (expression)
+            {
+                case ITruthy truthy:
+                    GetParameters(truthy, parameters);
+                    return;
+                case IValue value:
+                    GetParameters(value, parameters);
+                    return;
+                case SortOrderClause sortOrder:
+                    GetParameters(sortOrder, parameters);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(expression));
+            }
+        }
+
+        private static void GetParameters(ITruthy truthy, ICollection<ParameterExpression> parameters)
+        {
+            switch (truthy)
+            {
+                case ComparisonExpression comparisonExpression:
+                    GetParameters(comparisonExpression, parameters);
+                    return;
+                case InExpression inExpression:
+                    GetParameters(inExpression, parameters);
+                    return;
+                case IsNullExpression isNullExpression:
+                    GetParameters(isNullExpression, parameters);
+                    return;
+                case Junction junction:
+                    GetParameters(junction, parameters);
+                    return;
+                case Junctions junctions:
+                    GetParameters(junctions, parameters);
+                    return;
+                case LikeExpression likeExpression:
+                    GetParameters(likeExpression, parameters);
+                    return;
+                case NotExpression notExpression:
+                    GetParameters(notExpression, parameters);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(truthy));
+            }
+        }
+
+        private static void GetParameters(IValue value, ICollection<ParameterExpression> parameters)
+        {
+            switch (value)
+            {
+                case LiteralExpression _:
+                    return;
+                case ParameterExpression parameterExpression:
+                    GetParameters(parameterExpression, parameters);
+                    return;
+                case FieldAliasExpression fieldAliasExpression:
+                    GetParameters(fieldAliasExpression, parameters);
+                    return;
+                case FieldReferenceExpression _:
+                    return;
+                case FunctionCallExpression functionCallExpression:
+                    GetParameters(functionCallExpression, parameters);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(value));
+            }
+        }
+
+        private static void GetParameters(IQuery query, ICollection<ParameterExpression> parameters)
+        {
+            switch (query)
+            {
+                case DeleteStatement deleteStatement:
+                    GetParameters(deleteStatement, parameters);
+                    return;
+                case InsertStatement insertStatement:
+                    GetParameters(insertStatement, parameters);
+                    return;
+                case SelectStatement selectStatement:
+                    GetParameters(selectStatement, parameters);
+                    return;
+                case UpdateStatement updateStatement:
+                    GetParameters(updateStatement, parameters);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(query));
+            }
+        }
+
+        #endregion
+
+        #region General
+
+        private static void GetParameters(TableAndFieldValues tableAndFieldValues, ICollection<ParameterExpression> parameters)
+        {
+            foreach (FieldValue fieldValue in tableAndFieldValues.Values)
+            {
+                GetParameters(fieldValue.Value, parameters);
+            }
+        }
+
+        private static void GetParameters(ConnectQueryExpression connectQuery, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(connectQuery.Lhs, parameters);
+            GetParameters(connectQuery.Rhs, parameters);
+        }
+
+        private static void GetParameters(ParameterExpression parameterExpression, ICollection<ParameterExpression> parameters)
+        {
+            parameters.Add(parameterExpression);
+        }
+
+        private static void GetParameters(FunctionCallExpression parameterExpression, ICollection<ParameterExpression> parameters)
+        {
+            foreach (IExpression expression in parameterExpression.Parameters)
+            {
+                GetParameters(expression, parameters);
+            }
+        }
+        
+        private static void GetParameters(SortOrderClause sortOrderClause, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(sortOrderClause.Value, parameters);
+        }
+
+        #endregion
+
+        #region Insert
+
+        private static void GetParameters(InsertStatement insertStatement, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(insertStatement.InsertClause, parameters);
+        }
+
+        #endregion
+
+        #region Delete
+
+        private static void GetParameters(DeleteStatement deleteStatement, ICollection<ParameterExpression> parameters)
+        {
+            if (deleteStatement.Where == null)
+            {
+                return;
+            }
+
+            GetParameters(deleteStatement.Where, parameters);
+        }
+
+        #endregion
+
+        #region Where
+
+        private static void GetParameters(ComparisonExpression comparison, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(comparison.Lhs, parameters);
+            GetParameters(comparison.Rhs, parameters);
+        }
+
+        private static void GetParameters(Junction junction, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(junction.Lhs, parameters);
+            GetParameters(junction.Rhs, parameters);
+        }
+
+        private static void GetParameters(Junctions junctions, ICollection<ParameterExpression> parameters)
+        {
+            foreach (ITruthy junction in junctions.Truthies)
+            {
+                GetParameters(junction, parameters);
+            }
+        }
+
+        private static void GetParameters(IsNullExpression isNull, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(isNull.Expr, parameters);
+        }
+
+        private static void GetParameters(InExpression inExpression, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(inExpression.Lhs, parameters);
+            GetParameters(inExpression.Rhs, parameters);
+        }
+
+        private static void GetParameters(LikeExpression like, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(like.Lhs, parameters);
+            GetParameters(like.Rhs, parameters);
+        }
+
+        private static void GetParameters(NotExpression not, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(not.Expr, parameters);
+        }
+
+        private static void GetParameters(WhereClause clause, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(clause.Expr, parameters);
+        }
+
+        #endregion
+
+        #region Select
+
+        private static void GetParameters(FieldAliasExpression fieldAlias, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(fieldAlias.Expr, parameters);
+        }
+
+        private static void GetParameters(SelectClause clause, ICollection<ParameterExpression> parameters)
+        {
+            foreach (ISelection selection in clause.Sel)
+            {
+                GetParameters(selection, parameters);
+            }
+        }
+
+        private static void GetParameters(SelectStatement selectStatement, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(selectStatement.Select, parameters);
+
+            if (selectStatement.Where != null)
+            {
+                GetParameters(selectStatement.Where, parameters);
+            }
+
+            if (selectStatement.GroupBy != null)
+            {
+                GetParameters(selectStatement.GroupBy, parameters);
+            }
+
+            if (selectStatement.Orderby != null)
+            {
+                GetParameters(selectStatement.Orderby, parameters);
+            }
+        }
+
+        #endregion
+
+        #region Update
+
+        private static void GetParameters(UpdateStatement updateStatement, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(updateStatement.Update, parameters);
+
+            if (updateStatement.Where == null)
+            {
+                return;
+            }
+
+            GetParameters(updateStatement.Where, parameters);
+        }
+
+        #endregion
+
+        #region From
+
+        private static void GetParameters(JoinCondition joinCondition, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(joinCondition.Condition, parameters);
+        }
+
+        private static void GetParameters(FromClause fromClause, ICollection<ParameterExpression> parameters)
+        {
+            GetParameters(fromClause.Table, parameters);
+        }
+
+        #endregion
+
+        #region Order by
+
+        private static void GetParameters(OrderByClause orderByClause, ICollection<ParameterExpression> parameters)
+        {
+            foreach (SortOrderClause expression in orderByClause.OrderBy)
+            {
+                GetParameters(expression, parameters);
+            }
+        }
+
+        #endregion
+
+        #region Group by
+
+        private static void GetParameters(GroupByClause groupByClause, ICollection<ParameterExpression> parameters)
+        {
+            foreach (IValue expression in groupByClause.GroupBy)
+            {
+                GetParameters(expression, parameters);
+            }
+        }
+
+        #endregion
 
         #endregion
     }

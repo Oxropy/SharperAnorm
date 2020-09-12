@@ -19,7 +19,7 @@ namespace SqlGenerator
 
         public static void BuildSeperated<T>(StringBuilder sb, string seperator, IEnumerable<T> parts, Action<T, StringBuilder> appendPart)
         {
-            using var part = parts.GetEnumerator();
+            using IEnumerator<T> part = parts.GetEnumerator();
             if (!part.MoveNext())
             {
                 return;

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 
-namespace SqlGenerator
+namespace SqlGenerator.DML
 {
     public class GroupByClause : IQueryPart
     {
-        public IEnumerable<IExpression> GroupBy { get; }
+        public IEnumerable<IValue> GroupBy { get; }
 
-        public GroupByClause(IEnumerable<IExpression> groupBy)
+        public GroupByClause(IEnumerable<IValue> groupBy)
         {
             GroupBy = groupBy;
         }

@@ -1,4 +1,4 @@
-namespace SqlGenerator
+namespace SqlGenerator.DDL
 {
     public class DropClause : IQueryPart
     {

@@ -1,20 +1,8 @@
+using SqlGenerator.DML.Truthy;
+
 #nullable enable
-using System.Collections.Generic;
-
-namespace SqlGenerator
+namespace SqlGenerator.DML
 {
-    public class UpdateClause : IQueryPart
-    {
-        public string Table { get; }
-        public IEnumerable<(string filed, object value)> Values { get; }
-
-        public UpdateClause(string table, IEnumerable<(string, object)> values)
-        {
-            Table = table;
-            Values = values;
-        }
-    }
-
     public class UpdateStatement : IQuery
     {
         public UpdateClause Update { get; }
@@ -31,7 +19,7 @@ namespace SqlGenerator
             Where = where;
         }
 
-        public UpdateStatement AddWhere(WhereClause where)
+        public UpdateStatement WithWhere(WhereClause where)
         {
             return new UpdateStatement(Update, where);
         }

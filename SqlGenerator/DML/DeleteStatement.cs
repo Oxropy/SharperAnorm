@@ -1,16 +1,8 @@
+using SqlGenerator.DML.Truthy;
+
 #nullable enable
-namespace SqlGenerator
+namespace SqlGenerator.DML
 {
-    public class DeleteClause : IQueryPart
-    {
-        public string Table { get; }
-
-        public DeleteClause(string table)
-        {
-            Table = table;
-        }
-    }
-
     public class DeleteStatement : IQuery
     {
         public DeleteClause Delete { get; }
@@ -27,7 +19,7 @@ namespace SqlGenerator
             Where = where;
         }
 
-        public DeleteStatement AddWhere(WhereClause where)
+        public DeleteStatement WithWhere(WhereClause where)
         {
             return new DeleteStatement(Delete, where);
         }

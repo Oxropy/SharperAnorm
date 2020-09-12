@@ -1,30 +1,8 @@
+using SqlGenerator.DML.Truthy;
+
 #nullable enable
-using System.Collections.Generic;
-
-namespace SqlGenerator
+namespace SqlGenerator.DML
 {
-    public class FieldAliasExpression : ISelection
-    {
-        public IExpression Expr { get; }
-        public string Alias { get; }
-
-        public FieldAliasExpression(IExpression expr, string alias)
-        {
-            Expr = expr;
-            Alias = alias;
-        }
-    }
-
-    public class SelectClause : IQueryPart
-    {
-        public IEnumerable<ISelection> Sel { get; }
-
-        public SelectClause(IEnumerable<ISelection> sel)
-        {
-            Sel = sel;
-        }
-    }
-
     public class SelectStatement : IQuery
     {
         public SelectClause Select { get; }

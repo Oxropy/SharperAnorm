@@ -1,42 +1,29 @@
 #nullable enable
 using System.Collections.Generic;
-using System.Text;
+using SqlGenerator.DDL;
+using SqlGenerator.DML;
+using SqlGenerator.DML.FieldAndTable;
+using SqlGenerator.DML.Truthy;
 
 namespace SqlGenerator
 {
     #region Interfaces
 
-    public interface IQuery : IQueryPart
-    {
-    }
+    public interface IQuery : IQueryPart { }
 
-    public interface IQueryPart
-    {
-    }
+    public interface IQueryPart { }
 
-    public interface ISelection : IQueryPart
-    {
-    }
+    public interface ISelection : IValue { }
 
-    public interface ITableName : ISelection
-    {
-    }
+    public interface ITableName : IQueryPart { }
 
-    public interface IExpression : IQueryPart
-    {
-    }
+    public interface IExpression : IQueryPart { }
 
-    public interface ITruthy : IExpression
-    {
-    }
+    public interface ITruthy : IExpression { }
 
-    public interface ILiteralExpression : IExpression
-    {
-    }
-    
-    public interface ICreate : IQueryPart
-    {
-    }
+    public interface ICreate : IQueryPart { }
+
+    public interface IValue : IExpression { }
 
     #endregion
 
@@ -54,7 +41,7 @@ namespace SqlGenerator
         }
     }
 
-    public class LiteralExpression : ILiteralExpression
+    public class LiteralExpression : IValue
     {
         public readonly object Literal;
 
@@ -65,23 +52,35 @@ namespace SqlGenerator
 
         public static string Sanitize(string s)
         {
-            return s; // TODO: ???
+            return s.Replace("'", "''");
         }
     }
 
-    public class FieldReferenceExpression : IExpression, ISelection
+    public class ParameterExpression : IValue
     {
         public string Name { get; }
+        public object Parameter { get; }
+
+        public ParameterExpression(string name, object parameter)
+        {
+            Name = name;
+            Parameter = parameter;
+        }
+    }
+
+    public class FieldReferenceExpression : ISelection
+    {
+        public string TableName { get; }
         public string FieldName { get; }
 
         public FieldReferenceExpression(string fieldName, string tableName = "")
         {
-            Name = tableName;
+            TableName = tableName;
             FieldName = fieldName;
         }
     }
 
-    public class FunctionCallExpression : IExpression, ISelection
+    public class FunctionCallExpression : ISelection
     {
         public string FunctionName { get; }
         public IEnumerable<IExpression> Parameters { get; }
@@ -93,35 +92,33 @@ namespace SqlGenerator
         }
     }
 
-    public class ListExpression : IExpression
-    {
-        public IEnumerable<IExpression> Expressions { get; }
-
-        public ListExpression(IEnumerable<IExpression> expressions)
-        {
-            Expressions = expressions;
-        }
-    }
-
     #endregion
 
     public static class QueryBuilderExtensions
     {
         public static string GetQuery(this IQueryPart part, IGenerator generator)
         {
-            var sb = new StringBuilder();
-            generator.Build(part, sb);
-            return sb.ToString();
+            return generator.GetQuery(part);
         }
 
-        public static FunctionCallExpression Call(this string name, params IExpression[] parameters)
+        public static LiteralExpression Val(object s)
         {
-            return new FunctionCallExpression(name, parameters);
+            return new LiteralExpression(s);
+        }
+
+        public static ParameterExpression Para(this string name, object value)
+        {
+            return new ParameterExpression(name, value);
         }
 
         public static FieldReferenceExpression Col(this string field, string table = "")
         {
             return new FieldReferenceExpression(field, table);
+        }
+
+        public static FunctionCallExpression Call(this string name, params IExpression[] parameters)
+        {
+            return new FunctionCallExpression(name, parameters);
         }
 
         #region Build
@@ -150,14 +147,14 @@ namespace SqlGenerator
 
         #region Create
 
-        public static CreateClause Create(string name, bool ifNotExist, params ICreate[] create)
-        {
-            return new CreateClause(name, ifNotExist, create);
-        }
-
         public static BaseTypeColumnDefinition ColDefinition(this string name, BaseType type, int typeLength = 0)
         {
             return new BaseTypeColumnDefinition(name, type, typeLength);
+        }
+
+        public static CreateClause Create(string name, bool ifNotExist, params ICreate[] create)
+        {
+            return new CreateClause(name, ifNotExist, create);
         }
 
         #endregion
@@ -171,18 +168,9 @@ namespace SqlGenerator
 
         #endregion
 
-        #region Delete
-
-        public static DeleteClause Delete(string name)
-        {
-            return new DeleteClause(name);
-        }
-
-        #endregion
-
         #region Insert
 
-        public static InsertClause Insert(string name, params (string, object)[] values)
+        public static InsertClause Insert(string name, params FieldValue[] values)
         {
             return new InsertClause(name, values);
         }
@@ -191,13 +179,21 @@ namespace SqlGenerator
 
         #region Update
 
-        public static UpdateClause Update(string name, params (string, object)[] values)
+        public static UpdateClause Update(string name, params FieldValue[] values)
         {
             return new UpdateClause(name, values);
         }
 
         #endregion
 
+        #region Delete
+
+        public static DeleteClause Delete(TableName name)
+        {
+            return new DeleteClause(name);
+        }
+
+        #endregion
 
         #region Select
 
@@ -215,14 +211,14 @@ namespace SqlGenerator
 
         #region From
 
+        public static TableName Table(string name, string alias = "")
+        {
+            return new TableName(name, alias);
+        }
+
         public static FromClause From(ITableName t)
         {
             return new FromClause(t);
-        }
-
-        public static ITableName Table(string name, string alias = "")
-        {
-            return new TableName(name, alias);
         }
 
         public static ITableName InnerJoin(this ITableName lhs, ITableName rhs, ITruthy comp)
@@ -260,7 +256,7 @@ namespace SqlGenerator
             return Join(lhs, JoinClause.FullOuter, rhs, comp);
         }
 
-        public static ITableName Join(this ITableName lhs, JoinClause jn, ITableName rhs, ITruthy comp)
+        private static ITableName Join(this ITableName lhs, JoinClause jn, ITableName rhs, ITruthy comp)
         {
             return new JoinCondition(lhs, jn, rhs, comp);
         }
@@ -284,7 +280,7 @@ namespace SqlGenerator
             return Junc(lhs, JunctionOp.Or, rhs);
         }
 
-        public static ITruthy Junc(this ITruthy lhs, JunctionOp op, ITruthy rhs)
+        private static ITruthy Junc(this ITruthy lhs, JunctionOp op, ITruthy rhs)
         {
             return new Junction(lhs, op, rhs);
         }
@@ -319,21 +315,11 @@ namespace SqlGenerator
             return Comp(lhs, ComparisonOperator.LowerThanOrEqual, rhs);
         }
 
-        public static ITruthy Comp(this IExpression lhs, ComparisonOperator co, IExpression rhs)
+        private static ITruthy Comp(this IExpression lhs, ComparisonOperator co, IExpression rhs)
         {
             return new ComparisonExpression(lhs, co, rhs);
         }
-
-        public static LiteralExpression Val(object s)
-        {
-            return new LiteralExpression(s);
-        }
-
-        public static ListExpression List(params IExpression[] parameters)
-        {
-            return new ListExpression(parameters);
-        }
-
+        
         public static ITruthy IsNull(this IExpression e)
         {
             return new IsNullExpression(e);
@@ -349,21 +335,21 @@ namespace SqlGenerator
             return new InExpression(lhs, rhs);
         }
 
-        public static ITruthy Like(this IExpression lhs, IExpression rhs)
+        public static ITruthy Like(this IValue lhs, IValue rhs)
         {
             return new LikeExpression(lhs, rhs);
-        }
-
-        public static PlaceholderExpression Plc()
-        {
-            return new PlaceholderExpression();
         }
 
         #endregion
 
         #region Order By
 
-        public static OrderByClause OrderBy(params IExpression[] orderBy)
+        public static SortOrderClause SortOrder(this FieldReferenceExpression field, SortOrder sortOrder)
+        {
+            return new SortOrderClause(field, sortOrder);
+        }
+
+        public static OrderByClause OrderBy(params SortOrderClause[] orderBy)
         {
             return new OrderByClause(orderBy);
         }
@@ -372,7 +358,7 @@ namespace SqlGenerator
 
         #region Group By
 
-        public static GroupByClause GroupBy(params IExpression[] groupBy)
+        public static GroupByClause GroupBy(params IValue[] groupBy)
         {
             return new GroupByClause(groupBy);
         }
